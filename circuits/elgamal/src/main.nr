@@ -1,3 +1,7 @@
+// Note : Elliptic ElGamal is NOT multiplicatively homomorphic on plaintext, contrarily to ElGamal on finited field, see : https://crypto.stackexchange.com/questions/32386/elliptic-curve-elgamal-with-homomorphic-mapping
+// Another different implementation of encoding message is possible see implementation of MACI https://github.com/weijiekoh/elgamal-babyjub/blob/master/ts/index.ts 
+// but this is still not multiplicatively homomorphic, it works only for rerandomization (because xIncrement component of Message does not get updated in the rerandomize() fonction) 
+
 use dep::std::ec::tecurve::affine::Curve as AffineCurve;
 use dep::std::ec::tecurve::affine::Point as Gaffine;
 use dep::std;
@@ -10,14 +14,9 @@ global bjj_basept_x = 5299619240641551281634865583518297030282874472190772894086
 global bjj_basept_y = 16950150798460657717958625567821834550301663161624707787222815936182638968203;
 
 fn main(priv_key: Field, message: Field, randomness: Field) {
-    let bjj_affine: AffineCurve = AffineCurve::new(bjj_a, bjj_d, Gaffine::new(bjj_generator_x,bjj_generator_y));
     let pub_key: Gaffine = bjj_priv_to_pub_key(priv_key);
     let encryption: (Gaffine,Field) = bjj_elgamal_encrypt(pub_key, message, randomness);
     std::println(bjj_elgamal_decrypt(priv_key, encryption)); // should print 0x2a , i.e 42 when using: nargo test --show-output
-    let encryption_2: (Gaffine,Field) = bjj_elgamal_encrypt(pub_key, 3,randomness);//1786238506780971210155527811195811734127504684195304758403306539861947848052); // new randomness MUST be sampled each time
-    let product_enc = (bjj_affine.add(encryption.0,encryption_2.0),encryption.1*encryption_2.1); // to check that vanilla elgamal is multiplicatively homomorphic
-    std::println(bjj_elgamal_decrypt(priv_key, product_enc)); // should print 0x7e , i.e 126=3*42
-
 }   
 
 #[test]
