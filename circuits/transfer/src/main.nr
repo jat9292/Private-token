@@ -13,9 +13,10 @@ global bjj_basept_x = 5299619240641551281634865583518297030282874472190772894086
 global bjj_basept_y = 16950150798460657717958625567821834550301663161624707787222815936182638968203;
 
 // Code of the circuit used at each transfer of the token to prove the validity of transfer (sender has enough balance) and correctness of encrypted new balances of sender and receiver.
-// Note : arguments of first line are all the private parameters, the second line contains all the public parameters
+// Note : arguments of first line are all the private parameters, the second and third lines contain all the public parameters
 fn main(private_key: Field, randomness1: Field, randomness2: Field, value: u40, balance_old_me_clear: u40, // balance_old_me_clear is the clear (i.e decrypted) balance of sender, this is computed offchain by solving the DLP with babygiant algorithm, after calling bjj_exp_elgamal_decrypt with his private key 
- public_key_me: pub Gaffine, public_key_to: pub Gaffine, balance_old_me_encrypted: pub (Gaffine,Gaffine), balance_old_to_encrypted: pub (Gaffine,Gaffine),balance_new_me_encrypted: pub (Gaffine,Gaffine), balance_new_to_encrypted: pub (Gaffine,Gaffine)) { 
+ public_key_me: pub Gaffine, public_key_to: pub Gaffine, balance_old_me_encrypted_1: pub Gaffine, balance_old_me_encrypted_2: Gaffine, balance_old_to_encrypted_1: pub Gaffine, balance_old_to_encrypted_2: pub Gaffine,
+ balance_new_me_encrypted_1: pub Gaffine, balance_new_me_encrypted_2: pub Gaffine, balance_new_to_encrypted_1: pub Gaffine, balance_new_to_encrypted_2: pub Gaffine) { 
     let computed_public_key = bjj_priv_to_pub_key(private_key);
     assert((public_key_me.x == computed_public_key.x) & (public_key_me.y == computed_public_key.y)); // check that the sender really owns the private key corresponding to his public key
     assert(value<=balance_old_me_clear); // the sender must have sufficient balance
@@ -25,15 +26,15 @@ fn main(private_key: Field, randomness1: Field, randomness2: Field, value: u40, 
     let bjj_affine: AffineCurve = AffineCurve::new(bjj_a, bjj_d, Gaffine::new(bjj_generator_x, bjj_generator_y));
     let base_pt: Gaffine = Gaffine::new(bjj_basept_x, bjj_basept_y);
     let embedded_balance_old_me_clear = bjj_affine.mul(balance_old_me_clear as Field, base_pt);
-    let decoded_value = bjj_exp_elgamal_decrypt(private_key, balance_old_me_encrypted);
+    let decoded_value = bjj_exp_elgamal_decrypt(private_key, (balance_old_me_encrypted_1,balance_old_me_encrypted_2));
     assert((decoded_value.x == embedded_balance_old_me_clear.x) & (decoded_value.y == embedded_balance_old_me_clear.y)); // check that unencrypted balance of sender really corresponds to his encrypted balance
 
     let balance_new_me_encrypted_computed = bjj_exp_elgamal_encrypt(public_key_me, balance_old_me_clear - value, randomness1);
-    assert((balance_new_me_encrypted_computed.0.x==balance_new_me_encrypted.0.x) & (balance_new_me_encrypted_computed.0.y==balance_new_me_encrypted.0.y) & (balance_new_me_encrypted_computed.1.x==balance_new_me_encrypted.1.x) & (balance_new_me_encrypted_computed.1.y==balance_new_me_encrypted.1.y)); // checks that the new encrypted balance of sender is correct
+    assert((balance_new_me_encrypted_computed.0.x==balance_new_me_encrypted_1.x) & (balance_new_me_encrypted_computed.0.y==balance_new_me_encrypted_1.y) & (balance_new_me_encrypted_computed.1.x==balance_new_me_encrypted_2.x) & (balance_new_me_encrypted_computed.1.y==balance_new_me_encrypted_2.y)); // checks that the new encrypted balance of sender is correct
     
     let value_encrypted_to = bjj_exp_elgamal_encrypt(public_key_to, value, randomness2);
-    let balance_new_to_encrypted_computed = (bjj_affine.add(balance_old_to_encrypted.0, value_encrypted_to.0),bjj_affine.add(balance_old_to_encrypted.1, value_encrypted_to.1)); // addition of the points on Baby Jubjub : this operation is additevely homomorphic for Exponential ElGamal
-    assert((balance_new_to_encrypted_computed.0.x==balance_new_to_encrypted.0.x) & (balance_new_to_encrypted_computed.0.y==balance_new_to_encrypted.0.y) & (balance_new_to_encrypted_computed.1.x==balance_new_to_encrypted.1.x) & (balance_new_to_encrypted_computed.1.y==balance_new_to_encrypted.1.y)); // checks that the new encrypted balance of receiver is correct
+    let balance_new_to_encrypted_computed = (bjj_affine.add(balance_old_to_encrypted_1, value_encrypted_to.0),bjj_affine.add(balance_old_to_encrypted_2, value_encrypted_to.1)); // addition of the points on Baby Jubjub : this operation is additevely homomorphic for Exponential ElGamal
+    assert((balance_new_to_encrypted_computed.0.x==balance_new_to_encrypted_1.x) & (balance_new_to_encrypted_computed.0.y==balance_new_to_encrypted_1.y) & (balance_new_to_encrypted_computed.1.x==balance_new_to_encrypted_2.x) & (balance_new_to_encrypted_computed.1.y==balance_new_to_encrypted_2.y)); // checks that the new encrypted balance of receiver is correct
 
 }
 
@@ -53,7 +54,8 @@ fn test_main() {
     let balance_old_to_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_me, 42, 1391605116707840153256607813912547565986654451413670922768018807428594876790);
     let balance_new_me_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_me, 9900, 1822621444658611763810175187603135903758150085834502834324145374677801372378);
     let balance_new_to_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_me, 142, 2734719865355938354270841735304585029623873348870165700414760972044487721910);
-    main(private_key, randomness1, randomness2, value, balance_old_me_clear, public_key_me, public_key_to, balance_old_me_encrypted, balance_old_to_encrypted, balance_new_me_encrypted, balance_new_to_encrypted);
+    main(private_key, randomness1, randomness2, value, balance_old_me_clear, public_key_me, public_key_to, balance_old_me_encrypted.0, balance_old_me_encrypted.1, balance_old_to_encrypted.0,
+     balance_old_to_encrypted.1, balance_new_me_encrypted.0, balance_new_me_encrypted.1, balance_new_to_encrypted.0,  balance_new_to_encrypted.1);
 }
 
 fn bjj_priv_to_pub_key(private_key: Field) -> Gaffine
