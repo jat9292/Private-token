@@ -51,9 +51,9 @@ fn test_main() {
     let public_key_me: Gaffine = bjj_priv_to_pub_key(private_key);
     let public_key_to: Gaffine = bjj_priv_to_pub_key(2397698694665525209403000085013646741088197704326090841842743616643093564368); // bjj_priv_to_pub_key(private_key_to)
     let balance_old_me_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_me, balance_old_me_clear, 1223911427385630814994881905088740515414339792865684838215099796087690786721);
-    let balance_old_to_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_me, 42, 1391605116707840153256607813912547565986654451413670922768018807428594876790);
+    let balance_old_to_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_to, 42, 1391605116707840153256607813912547565986654451413670922768018807428594876790);
     let balance_new_me_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_me, 9900, 1822621444658611763810175187603135903758150085834502834324145374677801372378);
-    let balance_new_to_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_me, 142, 2734719865355938354270841735304585029623873348870165700414760972044487721910);
+    let balance_new_to_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_to, 142, 2734719865355938354270841735304585029623873348870165700414760972044487721910);
     main(private_key, randomness1, randomness2, value, balance_old_me_clear, public_key_me, public_key_to, balance_old_me_encrypted.0, balance_old_me_encrypted.1, balance_old_to_encrypted.0,
      balance_old_to_encrypted.1, balance_new_me_encrypted.0, balance_new_me_encrypted.1, balance_new_to_encrypted.0,  balance_new_to_encrypted.1);
 }
