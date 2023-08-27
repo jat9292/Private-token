@@ -12,22 +12,23 @@ global bjj_generator_y = 5472060717959818805561601436314318772137091100104008585
 global bjj_basept_x = 5299619240641551281634865583518297030282874472190772894086521144482721001553;
 global bjj_basept_y = 16950150798460657717958625567821834550301663161624707787222815936182638968203;
 
-fn main(private_key: Field, plaintext: u16, randomness: Field) {
+fn main(private_key: Field, plaintext: u40, randomness: Field) {
     let public_key: Gaffine = bjj_priv_to_pub_key(private_key);
     let ciphertext: (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key, plaintext, randomness);
-    std::println(bjj_exp_elgamal_decrypt(private_key, ciphertext)); // should print emb(0x2a) , i.e emb(42) when using: nargo test --show-output
-
+    let decryption = bjj_exp_elgamal_decrypt(private_key, ciphertext);
+    std::println(decryption.x); // should print emb(message) , when using: nargo test --show-output
+    std::println(decryption.y); // should print emb(message) , when using: nargo test --show-output
     let bjj_affine: AffineCurve = AffineCurve::new(bjj_a, bjj_d, Gaffine::new(bjj_generator_x,bjj_generator_y));
     let base_pt: Gaffine = Gaffine::new(bjj_basept_x, bjj_basept_y);
     let plain_embedded: Gaffine = bjj_affine.mul(plaintext as Field,base_pt);
-    std::println(plain_embedded); // should print emb(0x2a) , i.e emb(42) when using: nargo test --show-output
-    std::println(compute_discrete_log(plain_embedded));
+    std::println(plain_embedded); // should print emb(message) , when using: nargo test --show-output
+    //std::println(compute_discrete_log(plain_embedded)); // too slow for 32 bits in Noir, we will use the Rust implementation compatible with u40 (see babygiant/main.rs)
 
 }
 
 #[test]
 fn test_main() {
-    let message: u16 = 42;
+    let message: u40 = 943594123598;
     let private_key: Field = 2291123624948246627368989940774052753470489062495018070576418670157516550852; // see debug notebook for an example on how to compute those
     let randomness: Field = 168986485046885582825082387270879151100288537211746581237924789162159767775; // see debug notebook for an example on how to compute those
     main(private_key,message,randomness);
@@ -41,7 +42,7 @@ fn bjj_priv_to_pub_key(private_key: Field) -> Gaffine
  bjj_affine.mul(private_key,base_pt)
 }
 
-fn bjj_exp_elgamal_encrypt(public_key: Gaffine, plaintext: u16, randomness: Field) -> (Gaffine,Gaffine)
+fn bjj_exp_elgamal_encrypt(public_key: Gaffine, plaintext: u40, randomness: Field) -> (Gaffine,Gaffine)
 {
  let bjj_affine: AffineCurve = AffineCurve::new(bjj_a, bjj_d, Gaffine::new(bjj_generator_x,bjj_generator_y));
  let base_pt: Gaffine = Gaffine::new(bjj_basept_x, bjj_basept_y);
@@ -60,7 +61,7 @@ fn bjj_exp_elgamal_decrypt(private_key : Field, ciphertext: (Gaffine,Gaffine)) -
  plain_embedded
 }
 
-unconstrained fn get_index(table: [Gaffine;256], search_element: Gaffine)->(bool,Field) {
+unconstrained fn get_index(table: [Gaffine;65536], search_element: Gaffine)->(bool,Field) {
     let mut found: bool = false;
     let mut index = 0;
     let len = table.len();
@@ -76,11 +77,12 @@ unconstrained fn get_index(table: [Gaffine;256], search_element: Gaffine)->(bool
 }
 
 // this function implements baby-step giant-step algorithm to compute efficiently the discrete logarithm
-unconstrained fn compute_discrete_log(plain_embedded: Gaffine)-> u16 {
+// NOTE : this was extremely slow above u8, so we are going to replace it with the Rust version (DLP for u40 in 10s) in the babygiant folder
+unconstrained fn compute_discrete_log(plain_embedded: Gaffine)-> u32 {
     let bjj_affine: AffineCurve = AffineCurve::new(bjj_a, bjj_d, Gaffine::new(bjj_generator_x,bjj_generator_y));
     let base_pt: Gaffine = Gaffine::new(bjj_basept_x, bjj_basept_y);
-    let m = 256; // 2**8, because we are limited to 16 bits for plaintext, i.e 16/2=8
-    let mut table: [Gaffine;256]=[base_pt;256];
+    let m = 65536; // 2**16, because we are limited to 32 bits for plaintext, i.e 32/2=16
+    let mut table: [Gaffine;65536]=[base_pt;65536];
     
     let mut v = Gaffine::zero();
     for j in 0..m { // baby-steps
@@ -108,7 +110,7 @@ unconstrained fn compute_discrete_log(plain_embedded: Gaffine)-> u16 {
         plain_embedded_mut = bjj_affine.subtract(plain_embedded_mut,giant_step);
     };
     assert(found); // this must always be true, it never fails unless plaintext is outside the u32 range (responsiblity of smart contract developer)
-    (i_index*m+j_index) as u16
+    (i_index*m+j_index) as u32
 }
 
 
