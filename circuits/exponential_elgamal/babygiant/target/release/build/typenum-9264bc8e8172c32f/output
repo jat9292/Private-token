@@ -1,3 +1,0 @@
-cargo:rerun-if-changed=build/main.rs
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=/Users/jaturk/Documents/projects/Private-token/circuits/exponential_elgamal/babygiant/target/release/build/typenum-9264bc8e8172c32f/out/consts.rs
-cargo:rustc-env=TYPENUM_BUILD_OP=/Users/jaturk/Documents/projects/Private-token/circuits/exponential_elgamal/babygiant/target/release/build/typenum-9264bc8e8172c32f/out/op.rs
