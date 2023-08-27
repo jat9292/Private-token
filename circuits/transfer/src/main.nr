@@ -20,7 +20,7 @@ fn main(private_key: Field, randomness1: Field, randomness2: Field, value: u40, 
     let computed_public_key = bjj_priv_to_pub_key(private_key);
     assert((public_key_me.x == computed_public_key.x) & (public_key_me.y == computed_public_key.y)); // check that the sender really owns the private key corresponding to his public key
     assert(value<=balance_old_me_clear); // the sender must have sufficient balance
-    assert(value>=1); // this is to deter potential front-running issue: ref https://crypto.stanford.edu/~buenz/papers/zether.pdf §3.1. Here we adopt a simpler approach than the multistep approach proposed in the Zether paper, for a better UX: an attacker who tries to DOS the sender should at least pay 1 token to either original sender or receiver. The "1" threshold could be changed to ensure correct economic incentives.
+    assert(value>=1); // this is to deter potential front-running issue: ref https://crypto.stanford.edu/~buenz/papers/zether.pdf §3.1. Here we adopt a simpler approach than the multistep approach proposed in the Zether paper, for a better UX: an attacker who tries to DOS the sender should at least pay 1 token to either original sender or receiver. The "1" threshold could be changed to ensure correct economic incentives, typically this should be at least a multiple of the average gas price of a transfer transaction.
     // another more straightforward solution to front-running would be simply to do the homomorphic addition in the smart contract rather than the circuit, but this is too expensive today on Ethereum, according to the Zeestar paper §III : https://files.sri.inf.ethz.ch/website/papers/sp22-zeestar.pdf
     
     let bjj_affine: AffineCurve = AffineCurve::new(bjj_a, bjj_d, Gaffine::new(bjj_generator_x, bjj_generator_y));
@@ -38,6 +38,7 @@ fn main(private_key: Field, randomness1: Field, randomness2: Field, value: u40, 
 
 }
 
+// Because of a bug in Noir 10.3, this test will cause a stack overflow error, but you can check that it passes via `nargo prove` instead of `nargo test`: the values inside Prover.toml are strictly equivalent to this test
 #[test]
 fn test_main() {
     // private values
@@ -54,6 +55,7 @@ fn test_main() {
     let balance_old_to_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_to, 42, 1391605116707840153256607813912547565986654451413670922768018807428594876790);
     let balance_new_me_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_me, 9900, randomness1);
     let balance_new_to_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_to, 142, 1391605116707840153256607813912547565986654451413670922768018807428594876790+randomness2);
+
     main(private_key, randomness1, randomness2, value, balance_old_me_clear, public_key_me, public_key_to, balance_old_me_encrypted.0, balance_old_me_encrypted.1, balance_old_to_encrypted.0,
      balance_old_to_encrypted.1, balance_new_me_encrypted.0, balance_new_me_encrypted.1, balance_new_to_encrypted.0,  balance_new_to_encrypted.1);
 }
