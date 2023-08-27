@@ -1,5 +1,5 @@
-// Note: Exponential ElGamal only supports plaintexts constrained to 32 bits, because solving the Discrete Log is needed during decryption
-// It is the responsiblity of the smart contract developer to ensure that all plaintexts are in the u32 range before encryption
+// Note: Exponential ElGamal only supports plaintexts constrained to 40 bits, because solving the Discrete Log is needed during decryption
+// It is the responsiblity of the smart contract developer to ensure that all plaintexts are in the u40 range before encryption
 use dep::std::ec::tecurve::affine::Curve as AffineCurve;
 use dep::std::ec::tecurve::affine::Point as Gaffine;
 use dep::std::collections::vec::Vec;
@@ -42,7 +42,7 @@ fn bjj_priv_to_pub_key(private_key: Field) -> Gaffine
  bjj_affine.mul(private_key,base_pt)
 }
 
-fn bjj_exp_elgamal_encrypt(public_key: Gaffine, plaintext: u40, randomness: Field) -> (Gaffine,Gaffine)
+fn bjj_exp_elgamal_encrypt(public_key: Gaffine, plaintext: u40, randomness: Field) -> (Gaffine,Gaffine)  // same notations as in https://en.wikipedia.org/wiki/ElGamal_encryption 
 {
  let bjj_affine: AffineCurve = AffineCurve::new(bjj_a, bjj_d, Gaffine::new(bjj_generator_x,bjj_generator_y));
  let base_pt: Gaffine = Gaffine::new(bjj_basept_x, bjj_basept_y);
