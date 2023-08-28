@@ -4,15 +4,16 @@ pragma solidity ^0.8.13;
 struct PublicKey {
     uint256 X;
     uint256 Y;
-} // The Public Key should be a point on the Baby JubJub elliptic curve : checks must be done offchain before registering
+} // The Public Key should be a point on Baby JubJub elliptic curve : checks must be done offchain before registering to ensure that X<p and Y<p and (X,Y) is on the curve
+// p = 21888242871839275222246405745257275088548364400416034343698204186575808495617 < 2**254
 
 /**
- * @dev Implementation a simple PublicKeyInfrastructure.
+ * @dev Implementation of a simple PublicKeyInfrastructure.
  * The Public Key should be a point on the Baby JubJub elliptic curve : 
- * it is represented by its coordinates X and Y in the struct PublicKey
- * any Ethereum account could set its own PublicKey, which is *non-revocable* once set
+ * It is represented by its coordinates X and Y in the struct PublicKey.
+ * Any Ethereum account could set its own PublicKey, which is *non-revocable* once set.
  * *Important* : it is the responsability of the user to register a valid point on Baby Jubjub as his public key, or else transfers
- * to him will fail as there is no check on X and Y values to verify that the registered point is on Baby Jubjub in this contract
+ * to him will fail as there is no check on X and Y values to verify that the registered point is on Baby Jubjub in this contract.
  */
 contract PublicKeyInfrastructure {
     
@@ -28,7 +29,7 @@ contract PublicKeyInfrastructure {
         emit NewRegisteredPublicKey(msg.sender, X, Y);
     }
 
-    function getRegistredKey(address user) external returns(PublicKey memory){
-        return registry[msg.sender];
+    function getRegistredKey(address user) external view returns(PublicKey memory){
+        return registry[user];
     }
 }

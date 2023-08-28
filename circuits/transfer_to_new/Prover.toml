@@ -1,0 +1,38 @@
+# All the values in this file are exactly the same as in the test_main() function in src/main.nr
+balance_old_me_clear = "10000"
+private_key = "0x0510bae26a9b59ebad67a4324c944b1910a778e8481d7f08ddba6bcd2b94b2c4"
+randomness1 = "0x005fa49918e16a3c3f4d42071a137c8a818964701c63604244ac2746b95e00df"
+randomness2 = "0x058e142fbb422b4f54f9d4be0cf30d5c09f82dd7a4ecc80f16584bebdc5e1d5b"
+value = "100"
+
+[balance_new_me_encrypted_1]
+x = "0x034ed15cc9c368232e3926503d285e05f1ebed691e83dd928ca96c9ef0ce7368"
+y = "0x0967e26ca6d6476a92fdf6e3417219351a51c337fb0a43fcfedc50f3009c036f"
+
+[balance_new_me_encrypted_2]
+x = "0x0fc4b44aaef6456b6ab9903eca0611ae93c698e83e34d83a61420999df6cc08a"
+y = "0x2dcaf1254efb6c12adae349d535daf925a7d3d8a7e7f07aeebdcec95989ea3d6"
+
+[balance_new_to_encrypted_1]
+x = "0x0b4745a7cfffdc93703644d66730209494165a7ebeeaa8a88cbbf78990ab4fb1"
+y = "0x14ecbf0d11a65130fdd781cd4ce101e1567f55a753b45b5f75884c17af809248"
+
+[balance_new_to_encrypted_2]
+x = "0x1bc9dd26f6fa165cd1a72dddae7089702e432ed33aeb9e8126357a655cda6e99"
+y = "0x1d33f987a8e9a2115b657274bf88eb4a439d31068efc429560a14ed80610bde3"
+
+[balance_old_me_encrypted_1]
+x = "0x185bf7468d377d2c4ed1029c0b8a63b1c60b1c29b2294998d86b9e22632a0d91"
+y = "0x01f8647518c40d31bb502f15e6335c926d17dda7415fcff8b745b35a4129ac0d"
+
+[balance_old_me_encrypted_2]
+x = "0x0bb708d7ebf5b0f8d81fabf30293c55fc42aab7dbc40cbca66af6985dae823b5"
+y = "0x21c9ec6dc2c5fe575e41c533e711f2e36252c97d16bb465a3c220b03eb54493d"
+
+[public_key_me]
+x = "0x1865e98a61eb14dd9366fbc6808c3cd93aec7cf0adcecd86711c17e8e96cf95a"
+y = "0x2a6b15f46f69a6a6f8991466900b57585a49e31643cc04b0070f6d74db9f9fdc"
+
+[public_key_to]
+x = "0x0a3ee6a5015696854620bb5584968102e80d745d5a25466eb4d6767a6ef1beb0"
+y = "0x22a6b0ac121d1d668544bc2258107a9e714976581f247ea3050b9d304556551e"

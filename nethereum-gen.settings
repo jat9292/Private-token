@@ -1,0 +1,7 @@
+{
+    "projectName": "PrivateToken",
+    "namespace": "PrivateToken.Contracts",
+    "lang": 0,
+    "autoCodeGen": true,
+    "projectPath": "../"
+}

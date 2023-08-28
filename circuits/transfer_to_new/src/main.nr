@@ -12,11 +12,11 @@ global bjj_generator_y = 5472060717959818805561601436314318772137091100104008585
 global bjj_basept_x = 5299619240641551281634865583518297030282874472190772894086521144482721001553;
 global bjj_basept_y = 16950150798460657717958625567821834550301663161624707787222815936182638968203;
 
-// Code of the circuit used at each transfer of the token to prove the validity of transfer (sender has enough balance) and correctness of encrypted new balances of sender and receiver.
+// This is almost like the transfer circuit, except that it is used only when the receiver address did not receive any private token yet, i.e his encrypted balance is still unintialized
 // To be sure this is not vulnerable, we added a check in the smart contract to make sure that sender is different from receiver (a nonce variable is not needed in our case because transfers are initiated by from=msg.sender in the contract, so replay attack is impossible)
 // Note : arguments of first line are all the private parameters, the second and third lines contain all the public parameters
 fn main(private_key: Field, randomness1: Field, randomness2: Field, value: u40, balance_old_me_clear: u40, // balance_old_me_clear is the clear (i.e decrypted) balance of sender, this is computed offchain by solving the DLP with babygiant algorithm, after calling bjj_exp_elgamal_decrypt with his private key 
- public_key_me: pub Gaffine, public_key_to: pub Gaffine, balance_old_me_encrypted_1: pub Gaffine, balance_old_me_encrypted_2: Gaffine, balance_old_to_encrypted_1: pub Gaffine, balance_old_to_encrypted_2: pub Gaffine,
+ public_key_me: pub Gaffine, public_key_to: pub Gaffine, balance_old_me_encrypted_1: pub Gaffine, balance_old_me_encrypted_2: Gaffine,
  balance_new_me_encrypted_1: pub Gaffine, balance_new_me_encrypted_2: pub Gaffine, balance_new_to_encrypted_1: pub Gaffine, balance_new_to_encrypted_2: pub Gaffine) { 
     let computed_public_key = bjj_priv_to_pub_key(private_key);
     assert((public_key_me.x == computed_public_key.x) & (public_key_me.y == computed_public_key.y)); // check that the sender really owns the private key corresponding to his public key
@@ -34,7 +34,7 @@ fn main(private_key: Field, randomness1: Field, randomness2: Field, value: u40, 
     assert((balance_new_me_encrypted_computed.0.x==balance_new_me_encrypted_1.x) & (balance_new_me_encrypted_computed.0.y==balance_new_me_encrypted_1.y) & (balance_new_me_encrypted_computed.1.x==balance_new_me_encrypted_2.x) & (balance_new_me_encrypted_computed.1.y==balance_new_me_encrypted_2.y)); // checks that the new encrypted balance of sender is correct
     
     let value_encrypted_to = bjj_exp_elgamal_encrypt(public_key_to, value, randomness2);
-    let balance_new_to_encrypted_computed = (bjj_affine.add(balance_old_to_encrypted_1, value_encrypted_to.0),bjj_affine.add(balance_old_to_encrypted_2, value_encrypted_to.1)); // addition of the points on Baby Jubjub : this operation is additevely homomorphic for Exponential ElGamal
+    let balance_new_to_encrypted_computed = value_encrypted_to; // in this case, contrarily to the normal transfer circuit, we do not need to do the homomorphic addition, we set the balance of receier to the encrypted amount being sent
     assert((balance_new_to_encrypted_computed.0.x==balance_new_to_encrypted_1.x) & (balance_new_to_encrypted_computed.0.y==balance_new_to_encrypted_1.y) & (balance_new_to_encrypted_computed.1.x==balance_new_to_encrypted_2.x) & (balance_new_to_encrypted_computed.1.y==balance_new_to_encrypted_2.y)); // checks that the new encrypted balance of receiver is correct
 
 }
@@ -53,12 +53,11 @@ fn test_main() {
     let public_key_me: Gaffine = bjj_priv_to_pub_key(private_key);
     let public_key_to: Gaffine = bjj_priv_to_pub_key(2397698694665525209403000085013646741088197704326090841842743616643093564368); // bjj_priv_to_pub_key(private_key_to)
     let balance_old_me_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_me, balance_old_me_clear, 1223911427385630814994881905088740515414339792865684838215099796087690786721);
-    let balance_old_to_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_to, 42, 1391605116707840153256607813912547565986654451413670922768018807428594876790);
     let balance_new_me_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_me, 9900, randomness1);
-    let balance_new_to_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_to, 142, 1391605116707840153256607813912547565986654451413670922768018807428594876790+randomness2);
+    let balance_new_to_encrypted : (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key_to, 100, randomness2);
 
-    main(private_key, randomness1, randomness2, value, balance_old_me_clear, public_key_me, public_key_to, balance_old_me_encrypted.0, balance_old_me_encrypted.1, balance_old_to_encrypted.0,
-     balance_old_to_encrypted.1, balance_new_me_encrypted.0, balance_new_me_encrypted.1, balance_new_to_encrypted.0,  balance_new_to_encrypted.1);
+    main(private_key, randomness1, randomness2, value, balance_old_me_clear, public_key_me, public_key_to, balance_old_me_encrypted.0, balance_old_me_encrypted.1, 
+     balance_new_me_encrypted.0, balance_new_me_encrypted.1, balance_new_to_encrypted.0,  balance_new_to_encrypted.1);
 }
 
 fn bjj_priv_to_pub_key(private_key: Field) -> Gaffine

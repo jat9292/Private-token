@@ -62,7 +62,7 @@ fn do_compute_dlog(x: &str, y: &str) -> u64 {
     let coeff_twisted = field_new!(Fq,"168700").sqrt().unwrap(); // this coeff_twisted was introduced to transform the coordinates of baby Jubjub points from the Twisted Edwards form coming from Noir, to the Edwards form compatible with arkworks
     let gx = field_new!(Fq, "5299619240641551281634865583518297030282874472190772894086521144482721001553")*coeff_twisted;
     let gy = field_new!(Fq, "16950150798460657717958625567821834550301663161624707787222815936182638968203");
-    let a = BabyJubJub::new(gx, gy);
+    let a = BabyJubJub::new(gx, gy); // the base point of the twisted Edwards form of Baby Jubjub : https://eips.ethereum.org/EIPS/eip-2494#forms-of-the-curve
     assert!(BabyJubJub::is_on_curve(&a));
     assert!(BabyJubJub::is_in_correct_subgroup_assuming_on_curve(&a));
     let bx = Fq::from_repr(parse_le_bytes_str(x)).unwrap()*coeff_twisted;
@@ -87,20 +87,20 @@ mod tests {
         assert_eq!(65545, dlog);
     }*/
 
-    /* 
+    
     #[test]
     fn test_compute_dlog() {
         let dlog = do_compute_dlog("cad3cd30e863eb0e2ed2ef543b5a7fe4f26a06dfb08828542cdf2487237bf500",
                                    "123b986383d08a0ca623bf8c59288032c8ce8054ebc415a53114bec295047a0a");
         assert_eq!(4294967295, dlog);
-    }*/
-
+    }
+    /* 
     #[test]
     fn test_compute_dlog() {
         let dlog = do_compute_dlog("f78559023c89207614e4677b86354a3588d443bdbe97f2b79c7c5e5affee382f",
                                    "dadb3067e6dd4e120cdb93fb4d9b2fc8af60a50ff0a68680ffc9d12a5e451f01");
         assert_eq!(943594123598, dlog);
-    }
+    }*/
     /* 
     #[test]
     fn test_compute_dlog() {
