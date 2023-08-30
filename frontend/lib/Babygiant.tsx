@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-// import Babygiant from "rust_project";
-// import * as wasm from "../../circuits/exponential_elgamal/babygiant";
-import * as wasm from "../rust_wasm/pkg";
+import React, { useState, useEffect } from "react";
+
+let wasm: any;
+
 export default function BabyGiantCalculator() {
   const [maxBitwidth, setMaxBitwidth] = useState(0);
   const [ax, setAx] = useState("");
@@ -13,6 +13,17 @@ export default function BabyGiantCalculator() {
   const [bt, setBt] = useState("");
   const [bz, setBz] = useState("");
   const [result, setResult] = useState("");
+
+  useEffect(() => {
+    // Dynamic import of the Wasm module
+    import("../../circuits/exponential_elgamal/babygiant/pkg/index.js")
+      .then((module) => {
+        wasm = module;
+      })
+      .catch((error) => {
+        console.error("Failed to load the Wasm module:", error);
+      });
+  }, []);
 
   const calculate = () => {
     const output = wasm.baby_giant(BigInt(maxBitwidth), ax, ay, bx, by, bt, bz);
