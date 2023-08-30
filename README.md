@@ -9,5 +9,18 @@ Token with private balances using zkSNARKs and Homomorphic Encryption, inspired 
 * pnpm 8.7.0
 * just 1.14.0
 
+# How to run
+First, in the root directory of the project, install necessary dependencies via: 
+```
+just wp
+```
+Then, if you want to run the front-end locally in dev mode: 
+```
+just dev
+```
+If you want to run the tests for the smart contracts, run: 
+```
+just test
+```
 # Warning
 Do not use in production, this was not audited and done as a final project for the [zkCamp Noir bootcamp](https://www.zkcamp.xyz/aztec).
