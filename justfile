@@ -8,7 +8,7 @@ dev:
     cd frontend && pnpm i && pnpm dev
 
 test:
-    forge test
+    cd utils && npm i && cd .. && forge test
 
 clean:
     cd frontend && rm -rf node_modules && cd .. && cd circuits/exponential_elgamal/babygiant/ && cargo clean && rm -rf pkg && rm Cargo.lock
