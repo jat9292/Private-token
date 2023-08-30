@@ -1055,8 +1055,8 @@
       }
     },
     "src/PrivateToken.sol": {
-      "lastModificationDate": 1693232787364,
-      "contentHash": "50735073d123fd8eab3b3003c60fbd48",
+      "lastModificationDate": 1693415984269,
+      "contentHash": "db129b44a7f1e8f0ed7d8d74a2cd2759",
       "sourceName": "src/PrivateToken.sol",
       "solcConfig": {
         "settings": {
@@ -1101,8 +1101,8 @@
       }
     },
     "src/PublicKeyInfrastructure.sol": {
-      "lastModificationDate": 1693232195787,
-      "contentHash": "e5e5b3b88741a3a88e3acca88a63bd6e",
+      "lastModificationDate": 1693415984269,
+      "contentHash": "1857089e78995bea0d62511188e44238",
       "sourceName": "src/PublicKeyInfrastructure.sol",
       "solcConfig": {
         "settings": {
@@ -1142,8 +1142,8 @@
       }
     },
     "test/PrivateToken.t.sol": {
-      "lastModificationDate": 1693319549444,
-      "contentHash": "9cf6bccbc2e36afce60c64aba121ef2d",
+      "lastModificationDate": 1693415984269,
+      "contentHash": "67a73293e9c58f2eb1676b9124bf5464",
       "sourceName": "test/PrivateToken.t.sol",
       "solcConfig": {
         "settings": {

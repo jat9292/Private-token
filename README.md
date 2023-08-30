@@ -6,6 +6,8 @@ Token with private balances using zkSNARKs and Homomorphic Encryption, inspired 
 * nargo version 0.10.3
 * cargo v1.73.0-nightly
 * forge 0.2.0
+* pnpm 8.7.0
+* just 1.14.0
 
 # Warning
 Do not use in production, this was not audited and done as a final project for the [zkCamp Noir bootcamp](https://www.zkcamp.xyz/aztec).
