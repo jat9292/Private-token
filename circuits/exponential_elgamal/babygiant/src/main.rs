@@ -11,6 +11,7 @@ use ark_ff::{BigInteger256, field_new, PrimeField, BigInteger, SquareRootField};
 use ark_ec::{AffineCurve, ProjectiveCurve};
 use ark_ec::twisted_edwards_extended::{GroupProjective, GroupAffine};
 use hex;
+use std::env;
 
 use std::collections::HashMap;
 
@@ -33,7 +34,6 @@ fn baby_giant(max_bitwidth: u64, a: &GroupAffine<EdwardsParameters>, b: &GroupPr
 
     for i in 0..m { // giant_steps
         if let Some(j) = table.get(&gamma.into_affine()) {
-            println!("{}",j);
             return i*m + j;
         }
         gamma = gamma - &am;
@@ -108,4 +108,17 @@ mod tests {
                                    "849761d6c7e79ce5d7a42fac89153833fbd109d4351e97a8059585a86555b406");
         assert_eq!(1099511627775, dlog);
     }*/
+}
+
+
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() < 3 {
+        eprintln!("Please provide two string arguments.");
+        return;
+    }
+
+    println!("{}", do_compute_dlog(&args[1], &args[2]));
 }

@@ -1,0 +1,1 @@
+/Users/jaturk/Documents/projects/Private-token/circuits/exponential_elgamal/babygiant/target/release/babygiant: /Users/jaturk/Documents/projects/Private-token/circuits/exponential_elgamal/babygiant/src/main.rs

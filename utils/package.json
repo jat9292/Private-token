@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "circomlibjs": "^0.1.7"
+  },
+  "type": "module"
+}

@@ -13,7 +13,7 @@ import {TransferToNewUltraVerifier} from "../circuits/transfer_to_new/contract/t
  * Because we use Exponential ElGamal encryption, each EncryptedBalance is a pair of points on Baby Jubjub (C1,C2) = ((C1x,C1y),(C2x,C2y)).
  */
 contract PrivateToken {
-    struct EncryptedBalance {
+    struct EncryptedBalance { // #TODO : We could pack those in 2 uints instead of 4 to save storage costs (for e.g using circomlibjs library to pack points on BabyJubjub) 
         uint256 C1x;
         uint256 C1y;
         uint256 C2x;
