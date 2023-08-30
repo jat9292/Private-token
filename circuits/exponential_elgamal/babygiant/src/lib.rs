@@ -11,11 +11,8 @@ use ark_ec::{AffineCurve, ProjectiveCurve};
 use ark_ed_on_bn254::{EdwardsAffine as BabyJubJub, EdwardsParameters, Fq, Fr};
 use ark_ff::{field_new, BigInteger, BigInteger256, PrimeField, SquareRootField};
 use hex;
-use std::env;
+// use std::env;
 
-use anyhow::{Error, Result};
-use serde::{Deserialize, Serialize};
-use serde_wasm_bindgen::{from_value, to_value};
 use std::collections::HashMap;
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
@@ -162,13 +159,13 @@ mod tests {
     }*/
 }
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
+// fn main() {
+//     let args: Vec<String> = env::args().collect();
 
-    if args.len() < 3 {
-        eprintln!("Please provide two string arguments.");
-        return;
-    }
+//     if args.len() < 3 {
+//         eprintln!("Please provide two string arguments.");
+//         return;
+//     }
 
-    println!("{}", do_compute_dlog(&args[1], &args[2]));
-}
+//     println!("{}", do_compute_dlog(&args[1], &args[2]));
+// }
