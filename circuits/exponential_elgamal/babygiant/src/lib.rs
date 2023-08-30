@@ -17,6 +17,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
+
 fn deserialize_affine(x: &str, y: &str) -> GroupAffine<EdwardsParameters> {
     let x_coord = Fq::from_str(x).unwrap();
     let y_coord = Fq::from_str(y).unwrap();
@@ -36,7 +37,6 @@ fn deserialize_projective(
     GroupProjective::new(x_coord, y_coord, t_coord, z_coord)
 }
 
-#[wasm_bindgen]
 pub fn baby_giant(
     max_bitwidth: u64,
     ax: &str,
@@ -99,6 +99,7 @@ pub fn parse_le_bytes_str(s: &str) -> BigInteger256 {
     return bi;
 }
 
+#[wasm_bindgen]
 pub fn do_compute_dlog(x: &str, y: &str) -> u64 {
     // x and y are in little-endian hex string format
     let coeff_twisted = field_new!(Fq, "168700").sqrt().unwrap(); // this coeff_twisted was introduced to transform the coordinates of baby Jubjub points from the Twisted Edwards form coming from Noir, to the Edwards form compatible with arkworks

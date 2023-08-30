@@ -9,3 +9,6 @@ dev:
 
 test:
     forge test
+
+clean:
+    cd frontend && rm -rf node_modules && cd .. && cd circuits/exponential_elgamal/babygiant/ && cargo clean && rm -rf pkg && rm Cargo.lock
