@@ -47,19 +47,23 @@ function _bigIntToUint8Array(bigInt) {
 // Utils functions (should be called directly by the dapp)
 export function privateToPublicKey(privateKey){
     const publicKeyPoint = babyJub.mulPointEscalar(babyJub.Base8,privateKey); // A point on Baby Jubjub : C = (CX, Cy)
-    return {"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(publicKeyPoint[0])).reverse()), // fromMontgomery because circomlibjs uses the Montgomery form by default, but we need the Twisted Edwards form in Noir
-            "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(publicKeyPoint[1])).reverse())}
+    return JSON.stringify({"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(publicKeyPoint[0])).reverse()).toString(), // fromMontgomery because circomlibjs uses the Montgomery form by default, but we need the Twisted Edwards form in Noir
+            "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(publicKeyPoint[1])).reverse()).toString()})
 }
 
 export function generatePrivateAndPublicKey() {
     const max_value = BigInt('2736030358979909402780800718157159386076813972158567259200215660948447373041'); // max value should be l (https://eips.ethereum.org/EIPS/eip-2494), the order of the big subgroup to avoid modulo bias
     const privateKey = _getRandomBigInt(max_value);
-    const publicKey = privateToPublicKey(privateKey);
-    return {"privateKey":privateKey, "publicKey":publicKey};
+    const publicKey = JSON.parse(privateToPublicKey(privateKey));
+    return JSON.stringify({"privateKey":privateKey.toString(), "publicKey":publicKey});
 }
 
-export function exp_elgamal_encrypt(public_key, plaintext) {  // same notations as in https://en.wikipedia.org/wiki/ElGamal_encryption 
+export function exp_elgamal_encrypt(public_key_, plaintext_) {  // same notations as in https://en.wikipedia.org/wiki/ElGamal_encryption 
         // Check if it's a number and an integer in uint40 range
+        const public_key = JSON.parse(public_key_);
+        publicKey.x = BigInt(publicKey.x);
+        publicKey.y = BigInt(publicKey.y);
+        const plaintext = Number(plaintext_);
         if (typeof plaintext === 'number' && Number.isInteger(plaintext) && plaintext >= 0 && plaintext <= 1099511627775) {
             const max_value = BigInt('2736030358979909402780800718157159386076813972158567259200215660948447373041'); // max value should be l (https://eips.ethereum.org/EIPS/eip-2494), the order of the big subgroup to avoid modulo bias
             const randomness = BigInt(1);//_getRandomBigInt(max_value);
@@ -67,61 +71,61 @@ export function exp_elgamal_encrypt(public_key, plaintext) {  // same notations 
             const plain_embedded = babyJub.mulPointEscalar(babyJub.Base8,plaintext);
             const shared_secret = babyJub.mulPointEscalar([babyJub.F.toMontgomery(_bigIntToUint8Array(public_key.x).reverse()),babyJub.F.toMontgomery(_bigIntToUint8Array(public_key.y).reverse())],randomness);
             const C2P = babyJub.addPoint(plain_embedded,shared_secret);
-            const C1 = {"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C1P[0])).reverse()),
-                        "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C1P[1])).reverse())};
-            const C2 = {"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C2P[0])).reverse()),
-                        "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C2P[1])).reverse())};
-            return {"C1":C1, "C2": C2};
+            const C1 = {"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C1P[0])).reverse()).toString(),
+                        "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C1P[1])).reverse()).toString()};
+            const C2 = {"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C2P[0])).reverse()).toString(),
+                        "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C2P[1])).reverse()).toString()};
+            return JSON.stringify({"C1":C1, "C2": C2});
         }
             else {
                 throw new Error("Plain value most be an integer in uint40 range");
             }
 }
 
-export function exp_elgamal_decrypt_embedded(private_key, C1, C2) {
+export function exp_elgamal_decrypt_embedded(private_key_, C1_, C2_) {
+    const private_key = BigInt(private_key_);
+    const C1 = JSON.parse(C1_);
+    C1.x = BigInt(C1.x);
+    C1.y = BigInt(C1.y);
+    const C2 = JSON.parse(C2_);
+    C2.x = BigInt(C2.x);
+    C2.y = BigInt(C2.y);
     const shared_secret = babyJub.mulPointEscalar([babyJub.F.toMontgomery(_bigIntToUint8Array(C1.x).reverse()),babyJub.F.toMontgomery(_bigIntToUint8Array(C1.y).reverse())],private_key);
     const shared_secret_inverse = babyJub.mulPointEscalar(shared_secret,2736030358979909402780800718157159386076813972158567259200215660948447373040n); // Note : this BigInt is equal to l-1, this equivalent here to -1, to take the inverse of shared_secret, because mulPointEscalar only supports positive values for the second argument
     const plain_embedded = babyJub.addPoint([babyJub.F.toMontgomery(_bigIntToUint8Array(C2.x).reverse()),babyJub.F.toMontgomery(_bigIntToUint8Array(C2.y).reverse())],shared_secret_inverse);
-    return {"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(plain_embedded[0])).reverse()),
-            "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(plain_embedded[1])).reverse())};
+    return JSON.stringify({"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(plain_embedded[0])).reverse()).toString(),
+            "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(plain_embedded[1])).reverse()).toString()});
 }
 
-export function intToLittleEndianHex(n) { // should take a BigInt and returns a string in little endian hexadecimal, of size 64, to give as input as the Rust script computing the Discrete Log with baby-step giant-step algo
-    // Ensure input is a BigInt
-    if (typeof n !== 'bigint') {
-        throw new Error('Input must be a BigInt.');
-    }
-
+export function intToLittleEndianHex(n_) { // should take a (string of) BigInt and returns a string in little endian hexadecimal, of size 64, to give as input as the Rust script computing the Discrete Log with baby-step giant-step algo
+    const n = BigInt(n_);
     let hexValue = n.toString(16);
-
     if (hexValue.length % 2 !== 0) {
         hexValue = '0' + hexValue;
     }
-
     const pairs = [];
     for (let i = 0; i < hexValue.length; i += 2) {
         pairs.push(hexValue.substring(i, i + 2));
     }
     const littleEndian = pairs.reverse().join('');
-
     return littleEndian.padEnd(64, '0');
 }
 
 // Tests (Uncomment and then run `node babyjubjub_utils.js` to test)
+
+const keyPair = JSON.parse(generatePrivateAndPublicKey());
+const privateKey = keyPair['privateKey'];
+const publicKey = keyPair['publicKey'];
+console.log("INPUTS ENCRYPT", JSON.stringify(publicKey),"943594123598")
+const encryptedPair = JSON.parse(exp_elgamal_encrypt(JSON.stringify(publicKey),"943594123598"));
+console.log("OUTUTS ENCRYPT", encryptedPair);
 /*
-const {privateKey, publicKey} = generatePrivateAndPublicKey();
-const {C1,C2} = exp_elgamal_encrypt(publicKey,943594123598);
-console.log("privateKey : ", privateKey)
-console.log("C1 : ", C1)
-console.log("C2 : ", C2)
-const decrypted_embedded = exp_elgamal_decrypt_embedded(privateKey,C1,C2);
+const C1 = encryptedPair['C1'];
+const C2 = encryptedPair['C2'];
+const decrypted_embedded = JSON.parse(exp_elgamal_decrypt_embedded(privateKey.toString(),JSON.stringify(C1),JSON.stringify(C2)));
 console.log(decrypted_embedded.x);
 console.log(decrypted_embedded.y); // we checked that this gives the same results as the tests inside the exponential_elgamal Noir circuit.
 
-// to give as input as the Rust script computing the Discrete Log with baby-step giant-step algo (../circuits/exponential_elgamal/babygiant/src/main.rs)
+// to give as input to the Rust script computing the Discrete Log with baby-step giant-step algo (../circuits/exponential_elgamal/babygiant/src/main.rs)
 console.log(intToLittleEndianHex(decrypted_embedded.x));
 console.log(intToLittleEndianHex(decrypted_embedded.y));*/
-let publicKey = {x:BigInt("379017396254520794809180362523925442412571502439479813731371165559121716250"),y:BigInt("17685017012451886046607260931213121642676630329868373671232834863917568016567")}
-console.log("INPUTS ENCRYPT", publicKey,"943594123598")
-const encryptedPair = exp_elgamal_encrypt(publicKey,943594123598);
-console.log("OUTUTS ENCRYPT", encryptedPair);
