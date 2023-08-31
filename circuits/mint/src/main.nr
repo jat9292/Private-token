@@ -33,6 +33,7 @@ fn test_main() {
     let public_key: Gaffine = bjj_priv_to_pub_key(private_key);
     let value: u40 = 1000000000000; // the message being encrypted
     let (C1, C2) = bjj_exp_elgamal_encrypt(public_key, value, randomness);
+
     main(private_key, randomness, public_key,value,C1,C2);  // checks that public_key is derived from private_key and returns encrypted value and most importantly that the encrpyted value, i.e (C1,C2), is correct
 }
 
