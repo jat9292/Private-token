@@ -1,0 +1,1 @@
+/Users/jaturk/Documents/projects/Private-token-frontend/Private-token-private/circuits/exponential_elgamal/babygiant/target/wasm32-unknown-unknown/release/babygiant.wasm: /Users/jaturk/Documents/projects/Private-token-frontend/Private-token-private/circuits/exponential_elgamal/babygiant/src/lib.rs

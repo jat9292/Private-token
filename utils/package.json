@@ -1,6 +1,13 @@
 {
   "dependencies": {
-    "circomlibjs": "^0.1.7"
+    "@aztec/bb.js": "^0.3.6",
+    "@noir-lang/acvm_js": "git+https://git@github.com/noir-lang/acvm-simulator-wasm.git#b9d9ca9dfc5140839f23998d9466307215607c42",
+    "circomlibjs": "^0.1.7",
+    "ethers": "^5.7.2",
+    "fflate": "^0.8.0"
   },
-  "type": "module"
+  "devDependencies": {
+    "@types/node": "^20.5.7",
+    "ts-node": "^10.9.1"
+  }
 }

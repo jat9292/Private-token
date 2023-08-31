@@ -1,3 +1,4 @@
+// We cannot use typescript with circomlibjs, so we keep it as a js file (no types declaration file)
 import { buildBabyjub }  from "circomlibjs";
 import { getCurveFromName, Scalar }  from "ffjavascript";
 import crypto from 'crypto';
