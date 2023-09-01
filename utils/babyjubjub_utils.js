@@ -71,7 +71,7 @@ export function exp_elgamal_encrypt(public_key, plaintext) {  // same notations 
                         "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C1P[1])).reverse())};
             const C2 = {"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C2P[0])).reverse()),
                         "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C2P[1])).reverse())};
-            return {"C1":C1, "C2": C2};
+            return {"C1":C1, "C2": C2, "randomness": randomness}; // randomness should stay private, but we need it as private inputs in the circuit
         }
             else {
                 throw new Error("Plain value most be an integer in uint40 range");

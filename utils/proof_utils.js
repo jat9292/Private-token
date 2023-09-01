@@ -7,6 +7,7 @@ import { ethers } from 'ethers';
 import { executeCircuit, compressWitness } from '@noir-lang/acvm_js';
 import { decompressSync } from 'fflate';
 
+
 export async function genProof(circuit_name,inputs){
   if (typeof inputs === "string"){
     inputs = JSON.parse(inputs); // this is to be able to use the cli_utils.js to generate proofs, otherwise, if genProof is called in the front-end, inputs should be an object with BigInt values : see examples in the commented tests at the bottom of this file
