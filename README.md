@@ -1,25 +1,66 @@
-# Private-token
-Token with private balances using zkSNARKs and Homomorphic Encryption, inspired by [Zeestar](https://files.sri.inf.ethz.ch/website/papers/sp22-zeestar.pdf) and [Zether](https://crypto.stanford.edu/~buenz/papers/zether.pdf), implemented in [Noir](https://noir-lang.org/) (and Rust).
+## Foundry
 
-# Requirements
-* node version 18 or later
-* nargo version 0.10.3
-* cargo v1.73.0-nightly
-* hardhat v2.17.2
-* just 1.14.0
+**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
 
-# How to run
-First, in the root directory of the project, install necessary dependencies via: 
+Foundry consists of:
+
+-   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
+-   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
+-   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
+-   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+
+## Documentation
+
+https://book.getfoundry.sh/
+
+## Usage
+
+### Build
+
+```shell
+$ forge build
 ```
-just wp
+
+### Test
+
+```shell
+$ forge test
 ```
-Then, if you want to run the front-end locally in dev mode: 
+
+### Format
+
+```shell
+$ forge fmt
 ```
-just dev
+
+### Gas Snapshots
+
+```shell
+$ forge snapshot
 ```
-If you want to run the tests for the smart contracts, run: 
+
+### Anvil
+
+```shell
+$ anvil
 ```
-just test
+
+### Deploy
+
+```shell
+$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
 ```
-# Warning
-Do not use in production, this was not audited and done as a final project for the [zkCamp Noir bootcamp](https://www.zkcamp.xyz/aztec).
+
+### Cast
+
+```shell
+$ cast <subcommand>
+```
+
+### Help
+
+```shell
+$ forge --help
+$ anvil --help
+$ cast --help
+```
