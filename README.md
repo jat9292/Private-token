@@ -5,7 +5,7 @@ Token with private balances using zkSNARKs and Homomorphic Encryption, inspired 
 * node version 18 or later
 * nargo version 0.10.3
 * cargo v1.73.0-nightly
-* forge 0.2.0
+* hardhat v2.17.2
 * just 1.14.0
 
 # How to run

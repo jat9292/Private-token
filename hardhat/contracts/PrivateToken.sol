@@ -2,9 +2,9 @@
 pragma solidity ^0.8.13;
 
 import "./PublicKeyInfrastructure.sol";
-import {MintUltraVerifier} from "../circuits/mint/contract/mint/mint_plonk_vk.sol";
-import {TransferUltraVerifier} from "../circuits/transfer/contract/transfer/transfer_plonk_vk.sol";
-import {TransferToNewUltraVerifier} from "../circuits/transfer_to_new/contract/transfer_to_new/transfer_to_new_plonk_vk.sol";
+import {MintUltraVerifier} from "./mint_plonk_vk.sol";
+import {TransferUltraVerifier} from "./transfer_plonk_vk.sol";
+import {TransferToNewUltraVerifier} from "./transfer_to_new_plonk_vk.sol";
 
 /**
  * @dev Implementation of PrivateToken.
