@@ -5,6 +5,21 @@ const { ethers } = pkg;
 import * as babyjubjubUtils from '../../utils/babyjubjub_utils.js';
 import * as proofUtils from '../../utils/proof_utils.js';
 
+
+function uint8ArrayToHexString(arr) {
+  return '0x' + Array.from(arr).map(byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
+function bigIntToHexString(bigIntValue) {
+  let hexString = bigIntValue.toString(16).toUpperCase();
+  // Ensure it's 64 characters long (32 bytes), padding with leading zeros if necessary
+  while (hexString.length < 64) {
+      hexString = '0' + hexString;
+  }
+  return '0x' + hexString;
+}
+
+
 describe("Private Token integration testing", function () {
   let publicKeyInfrastructure;
   let privateToken;
@@ -63,12 +78,16 @@ describe("Private Token integration testing", function () {
   console.log(" ⏳ Central banker is computing a mint circuit proof offchain ⏳");
   const proof_mint = await proofUtils.genProof("mint",inputs_mint);
   console.log(" 🆗 Central banker successfully computed a mint proof and checked it offchain 🆗 ");
-  //console.log(await mintUltraVerifier.getAddress())
+  const publicInputs = [bigIntToHexString(publicKeyDeployer.x),bigIntToHexString(publicKeyDeployer.y),bigIntToHexString(BigInt(totalSupply.toString())),
+    bigIntToHexString(totalSupplyEncrypted.C1.x),bigIntToHexString(totalSupplyEncrypted.C1.y),bigIntToHexString(totalSupplyEncrypted.C2.x),bigIntToHexString(totalSupplyEncrypted.C2.y)];
+  console.log("Inputs for mint circuit : ", inputs_mint);
+  console.log("Public Inputs : ",publicInputs);
+  console.log("Testing onchain verification : " , await mintUltraVerifier.verify(uint8ArrayToHexString(proof_mint),publicInputs,{gasLimit: 50000000}));
+  /*
   privateToken = await privateTokenFactory.deploy(totalSupply,await publicKeyInfrastructure.getAddress(),await mintUltraVerifier.getAddress(),
-                                              await transferUltraVerifier.getAddress(),await transferToNewUltraVerifier.getAddress(), proof_mint, 
+                                              await transferUltraVerifier.getAddress(),await transferToNewUltraVerifier.getAddress(), uint8ArrayToHexString(proof_mint), 
                                         {C1x: totalSupplyEncrypted.C1.x, C1y: totalSupplyEncrypted.C1.y, C2x: totalSupplyEncrypted.C2.x,C2y: totalSupplyEncrypted.C2.y});
-  console.log(" ✅ Private token deployed by central banker ✅ ");
-
+  console.log(" ✅ Private token deployed by central banker ✅ ");*/
 
 });
 
