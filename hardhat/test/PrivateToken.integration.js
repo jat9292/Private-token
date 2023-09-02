@@ -80,20 +80,24 @@ describe("Private Token integration testing", function () {
   console.log(" 🆗 Central banker successfully computed a mint proof and checked it offchain 🆗 ");
 
   
-  console.log("PRIVATE inputs : ", [bigIntToHexString(privateKeyDeployer),bigIntToHexString(totalSupplyEncrypted.randomness)])
   const publicInputs = [bigIntToHexString(publicKeyDeployer.x),bigIntToHexString(publicKeyDeployer.y),bigIntToHexString(BigInt(totalSupply.toString())),
     bigIntToHexString(totalSupplyEncrypted.C1.x),bigIntToHexString(totalSupplyEncrypted.C1.y),bigIntToHexString(totalSupplyEncrypted.C2.x),bigIntToHexString(totalSupplyEncrypted.C2.y)];
-  console.log("Inputs for mint circuit : ", inputs_mint);
-  console.log("Public Inputs : ",publicInputs);
-  console.log("Proof : ", uint8ArrayToHexString(proof_mint));
-  console.log("Public Inputs : ", publicInputs);
-  let result = await mintUltraVerifier.verify(uint8ArrayToHexString(proof_mint),publicInputs);
+
+  const sliced_proof_mint = proof_mint.slice(publicInputs.length*32); //  bb.js appends the public inputs to the proof
+  const string_proof = uint8ArrayToHexString(sliced_proof_mint);
+  console.log("All inputs : ", inputs_mint)
+  console.log("Public Inputs Array : " , publicInputs)
+  //let result = await mintUltraVerifier.verify(uint8ArrayToHexString(sliced_proof_mint),publicInputs);
+  const public_inputs_sliced = [proof_mint.slice(0,32),proof_mint.slice(32,64),proof_mint.slice(64,96),proof_mint.slice(96,128),proof_mint.slice(128,160),proof_mint.slice(160,192),proof_mint.slice(192,224)];
+  console.log("Public Inputs Sliced : " , public_inputs_sliced);
+  console.log("Sliced proof arrray : ", sliced_proof_mint)
+  let result = await mintUltraVerifier.verify(sliced_proof_mint,public_inputs_sliced);
   console.log("Testing onchain verification : " , result);
-  /*
-  privateToken = await privateTokenFactory.deploy(totalSupply,await publicKeyInfrastructure.getAddress(),await mintUltraVerifier.getAddress(),
-                                              await transferUltraVerifier.getAddress(),await transferToNewUltraVerifier.getAddress(), uint8ArrayToHexString(proof_mint), 
-                                        {C1x: totalSupplyEncrypted.C1.x, C1y: totalSupplyEncrypted.C1.y, C2x: totalSupplyEncrypted.C2.x,C2y: totalSupplyEncrypted.C2.y});
-  console.log(" ✅ Private token deployed by central banker ✅ ");*/
+
+  //privateToken = await privateTokenFactory.deploy(totalSupply,await publicKeyInfrastructure.getAddress(),await mintUltraVerifier.getAddress(),
+  //                                            await transferUltraVerifier.getAddress(),await transferToNewUltraVerifier.getAddress(), uint8ArrayToHexString(sliced_proof_mint), 
+   //                                     {C1x: totalSupplyEncrypted.C1.x, C1y: totalSupplyEncrypted.C1.y, C2x: totalSupplyEncrypted.C2.x,C2y: totalSupplyEncrypted.C2.y});
+  //console.log(" ✅ Private token deployed by central banker ✅ ");
 
 });
 
