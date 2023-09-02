@@ -16,7 +16,7 @@ global bjj_basept_y = 1695015079846065771795862556782183455030166316162470778722
 // To be sure this is not vulnerable, we added a check in the smart contract to make sure that sender is different from receiver (a nonce variable is not needed in our case because transfers are initiated by from=msg.sender in the contract, so replay attack is impossible)
 // Note : arguments of first line are all the private parameters, the second and third lines contain all the public parameters
 fn main(private_key: Field, randomness1: Field, randomness2: Field, value: u40, balance_old_me_clear: u40, // balance_old_me_clear is the clear (i.e decrypted) balance of sender, this is computed offchain by solving the DLP with babygiant algorithm, after calling bjj_exp_elgamal_decrypt with his private key 
- public_key_me: pub Gaffine, public_key_to: pub Gaffine, balance_old_me_encrypted_1: pub Gaffine, balance_old_me_encrypted_2: Gaffine, balance_old_to_encrypted_1: pub Gaffine, balance_old_to_encrypted_2: pub Gaffine,
+ public_key_me: pub Gaffine, public_key_to: pub Gaffine, balance_old_me_encrypted_1: pub Gaffine, balance_old_me_encrypted_2: pub Gaffine, balance_old_to_encrypted_1: pub Gaffine, balance_old_to_encrypted_2: pub Gaffine,
  balance_new_me_encrypted_1: pub Gaffine, balance_new_me_encrypted_2: pub Gaffine, balance_new_to_encrypted_1: pub Gaffine, balance_new_to_encrypted_2: pub Gaffine) { 
     let computed_public_key = bjj_priv_to_pub_key(private_key);
     assert((public_key_me.x == computed_public_key.x) & (public_key_me.y == computed_public_key.y)); // check that the sender really owns the private key corresponding to his public key

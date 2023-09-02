@@ -34,6 +34,7 @@ describe("Private Token integration testing", function () {
   let privateKeyUserA;
   let privateKeyUserB;
 
+  this.timeout(1000000);
 
 - before(async () => { //Setup phase with initial deployments
   accounts = await ethers.getSigners();
@@ -66,6 +67,7 @@ describe("Private Token integration testing", function () {
   const privateTokenFactory = await ethers.getContractFactory("PrivateToken");
   const totalSupply = 1_000_000_000_000;
   const totalSupplyEncrypted = babyjubjubUtils.exp_elgamal_encrypt(publicKeyDeployer,totalSupply);
+
   const inputs_mint = {private_key: privateKeyDeployer, 
               randomness: totalSupplyEncrypted.randomness,
               public_key_x: publicKeyDeployer.x,
@@ -88,11 +90,21 @@ describe("Private Token integration testing", function () {
   console.log("All inputs : ", inputs_mint)
   console.log("Public Inputs Array : " , publicInputs)
   //let result = await mintUltraVerifier.verify(uint8ArrayToHexString(sliced_proof_mint),publicInputs);
-  const public_inputs_sliced = [proof_mint.slice(0,32),proof_mint.slice(32,64),proof_mint.slice(64,96),proof_mint.slice(96,128),proof_mint.slice(128,160),proof_mint.slice(160,192),proof_mint.slice(192,224)];
+  let public_inputs_sliced = [];
+  for (let i = 0; i < publicInputs.length*32; i += 32) {
+    public_inputs_sliced.push(proof_mint.slice(i, i + 32));
+  }
   console.log("Public Inputs Sliced : " , public_inputs_sliced);
-  console.log("Sliced proof arrray : ", sliced_proof_mint)
-  let result = await mintUltraVerifier.verify(sliced_proof_mint,public_inputs_sliced);
-  console.log("Testing onchain verification : " , result);
+
+  const public_inputs_sliced_string = public_inputs_sliced.map(input_sliced => uint8ArrayToHexString(input_sliced));
+  console.log("Public Inputs Sliced String: " , public_inputs_sliced_string);
+  let result = await mintUltraVerifier.verify(uint8ArrayToHexString(sliced_proof_mint),public_inputs_sliced_string);
+  console.log("Testing onchain verification : " , result); 
+
+
+
+
+
 
   //privateToken = await privateTokenFactory.deploy(totalSupply,await publicKeyInfrastructure.getAddress(),await mintUltraVerifier.getAddress(),
   //                                            await transferUltraVerifier.getAddress(),await transferToNewUltraVerifier.getAddress(), uint8ArrayToHexString(sliced_proof_mint), 
