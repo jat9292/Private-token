@@ -8,5 +8,12 @@ Token with private balances using zkSNARKs and Homomorphic Encryption, inspired 
 * hardhat v2.17.2
 * just 1.14.0
 
+# To run the tests : 
+
+Clone the repo, install the requirements, and then run : 
+```
+just test
+```
+
 # Warning
 Do not use in production, this was not audited and done as a final project for the [zkCamp Noir bootcamp](https://www.zkcamp.xyz/aztec).
