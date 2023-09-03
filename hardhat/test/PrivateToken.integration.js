@@ -84,13 +84,13 @@ describe("Private Token integration testing", function () {
   console.log(" ");
   const publicKeyInfrastructureFactory = await ethers.getContractFactory("PublicKeyInfrastructure");
   publicKeyInfrastructure = await publicKeyInfrastructureFactory.deploy();
-  console.log(" ✅ PublicKeyInfrastructure deployed by Central Banker ✅ ");
+  console.log(" ✅ PublicKeyInfrastructure deployed by \x1b[93;1mCentral Banker\x1b[0m 🏦 ✅ ");
   ({privateKey : privateKeyDeployer, publicKey: publicKeyDeployer} = babyjubjubUtils.generatePrivateAndPublicKey());
   console.log(" ");
-  console.log(" 👌 Central Banker generated his pair of private/public keys on Baby Jubjub 👌 ");
+  console.log(" 🔑 \x1b[93;1mCentral Banker\x1b[0m 🏦 generated his pair of private/public keys on Baby Jubjub 🔑 ");
   await publicKeyInfrastructure.registerPublicKey(publicKeyDeployer.x,publicKeyDeployer.y);
   console.log(" ");
-  console.log(" ✒️  Central Banker registered his public key in PublicKeyInfrastructure ✒️ ");
+  console.log(" ✒️  \x1b[93;1mCentral Banker\x1b[0m 🏦 registered his public key in PublicKeyInfrastructure ✒️ ");
   const privateTokenFactory = await ethers.getContractFactory("PrivateToken");
   totalSupply = 1_000_000_000_000;
   const totalSupplyEncrypted = babyjubjubUtils.exp_elgamal_encrypt(publicKeyDeployer,totalSupply);
@@ -105,15 +105,15 @@ describe("Private Token integration testing", function () {
               C2_x: totalSupplyEncrypted.C2.x,
               C2_y: totalSupplyEncrypted.C2.y};
 
-  console.log(" ⏳ Central Banker is computing a mint circuit proof offchain ⏳");
+  console.log(" ⏳ \x1b[93;1mCentral Banker\x1b[0m 🏦 is computing a mint circuit proof offchain ⏳");
   const proof_mint = await proofUtils.genProof("mint",inputs_mint);
-  console.log(" 🆗 Central Banker successfully computed a mint proof and checked it offchain 🆗 ");
+  console.log(" 🆗 \x1b[93;1mCentral Banker\x1b[0m 🏦 successfully computed a mint proof and checked it offchain 🆗 ");
   console.log(" ");
   const sliced_proof_mint = uint8ArrayToHexString(proof_mint.slice(7*32)); // bb.js appends the public inputs to the proof, and there are 7 public inputs (bytes32) for the mint circuit
   privateToken = await privateTokenFactory.deploy(totalSupply,await publicKeyInfrastructure.getAddress(),await mintUltraVerifier.getAddress(),
                                               await transferUltraVerifier.getAddress(),await transferToNewUltraVerifier.getAddress(), sliced_proof_mint, 
                                         {C1x: totalSupplyEncrypted.C1.x, C1y: totalSupplyEncrypted.C1.y, C2x: totalSupplyEncrypted.C2.x,C2y: totalSupplyEncrypted.C2.y});
-  console.log(" ✅ Private token deployed by Central Banker ✅ ");
+  console.log(" ✅ Private token deployed by \x1b[93;1mCentral Banker\x1b[0m 🏦 ✅ ");
 
 });
 
@@ -122,26 +122,26 @@ describe("Private Token integration testing", function () {
     console.log("Total Supply : ", totalSupply);
     console.log(" ");
     ({ privateKey: privateKeyUserA, publicKey: publicKeyUserA } = babyjubjubUtils.generatePrivateAndPublicKey());
-    console.log(" 👌 UserA generated his pair of private/public keys on Baby Jubjub 👌 ");
+    console.log(" 🔑 \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩 generated his pair of private/public keys on Baby Jubjub 🔑 ");
     await publicKeyInfrastructure.connect(userA).registerPublicKey(publicKeyUserA.x,publicKeyUserA.y);
     console.log(" ");
-    console.log(" ✒️  UserA registered his public key in PublicKeyInfrastructure ✒️ ");
+    console.log(" ✒️  \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩 registered his public key in PublicKeyInfrastructure ✒️ ");
     console.log(" ");
     ({ privateKey: privateKeyUserB, publicKey: publicKeyUserB } = babyjubjubUtils.generatePrivateAndPublicKey());
-    console.log(" 👌 UserB generated his pair of private/public keys on Baby Jubjub 👌 ");
+    console.log(" 🔑 \x1b[1m\x1b[96mUserB\x1b[0m 👨 generated his pair of private/public keys on Baby Jubjub 🔑 ");
     await publicKeyInfrastructure.connect(userB).registerPublicKey(publicKeyUserB.x,publicKeyUserB.y);
     console.log(" ");
-    console.log(" ✒️  UserB registered his public key in PublicKeyInfrastructure ✒️ ");
+    console.log(" ✒️  \x1b[1m\x1b[96mUserB\x1b[0m 👨 registered his public key in PublicKeyInfrastructure ✒️ ");
     console.log(" ");
 
     let balance_deployer_enc_old = await privateToken.balances(await deployer.getAddress());
-    console.log("Public encrypted Balance of Central Banker (read from PrivateToken contract) : ",  balance_deployer_enc_old.map(bigInt => bigInt.toString()));
+    console.log("Public encrypted Balance of \x1b[93;1mCentral Banker\x1b[0m 🏦 (read from PrivateToken contract) : ",  balance_deployer_enc_old.map(bigInt => bigInt.toString()));
     let balance_userA_enc_old = await privateToken.balances(await userA.getAddress());
-    console.log("Public encrypted Balance of UserA (read from PrivateToken contract) : ",  balance_userA_enc_old.map(bigInt => bigInt.toString()));
+    console.log("Public encrypted Balance of \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩 (read from PrivateToken contract) : ",  balance_userA_enc_old.map(bigInt => bigInt.toString()));
     let balance_userB_enc_old = await privateToken.balances(await userB.getAddress());
-    console.log("Public encrypted Balance of UserB (read from PrivateToken contract) : ",  balance_userB_enc_old.map(bigInt => bigInt.toString()));
+    console.log("Public encrypted Balance of \x1b[1m\x1b[96mUserB\x1b[0m 👨 (read from PrivateToken contract) : ",  balance_userB_enc_old.map(bigInt => bigInt.toString()));
     console.log(" ");
-    console.log(" ⏳ Central Banker is computing a transfer_to_new circuit proof offchain ⏳");
+    console.log(" ⏳ \x1b[93;1mCentral Banker\x1b[0m 🏦 is computing a transfer_to_new circuit proof offchain ⏳");
     const value_sent_deployer_to_A = 10000;
     let balance_deployer_enc_new = babyjubjubUtils.exp_elgamal_encrypt(publicKeyDeployer,totalSupply-value_sent_deployer_to_A);
     let balance_userA_enc_new = babyjubjubUtils.exp_elgamal_encrypt(publicKeyUserA,value_sent_deployer_to_A);
@@ -174,37 +174,41 @@ describe("Private Token integration testing", function () {
               };
 
     let proof_transfer_to_new = await proofUtils.genProof("transfer_to_new",inputs_transfer_to_new);
-    console.log(" 🆗 Central Banker successfully computed a transfer_to_new proof and checked it offchain 🆗 ");
+    console.log(" 🆗 \x1b[93;1mCentral Banker\x1b[0m 🏦 successfully computed a transfer_to_new proof and checked it offchain 🆗 ");
 
     console.log(" ");
     let sliced_proof_transfer_to_new = uint8ArrayToHexString(proof_transfer_to_new.slice(16*32)); // there are 16 public inputs (bytes32) for the transfer_to_new circuit
-    await privateToken.transfer(await userA.getAddress(), 
+    let tx = await privateToken.transfer(await userA.getAddress(), 
         {C1x: balance_deployer_enc_old[0], C1y: balance_deployer_enc_old[1], C2x: balance_deployer_enc_old[2], C2y: balance_deployer_enc_old[3]}, 
         {C1x: 0, C1y: 0, C2x: 0, C2y: 0}, 
         {C1x: balance_deployer_enc_new.C1.x, C1y: balance_deployer_enc_new.C1.y, C2x: balance_deployer_enc_new.C2.x, C2y: balance_deployer_enc_new.C2.y}, 
         {C1x: balance_userA_enc_new.C1.x, C1y: balance_userA_enc_new.C1.y, C2x: balance_userA_enc_new.C2.x, C2y: balance_userA_enc_new.C2.y},
         sliced_proof_transfer_to_new);
-    console.log("  ✒️  Central Banker transferred 10000 Private Tokens to UserA  ✒️   ");
+    console.log(" ✒️  \x1b[93;1mCentral Banker\x1b[0m 🏦 transferred 10000 Private Tokens to \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩  ✒️   ");
+
+    let transactionReceipt = await ethers.provider.getTransactionReceipt(tx.hash);
+    let gasUsed = transactionReceipt.gasUsed;
+    console.log(" ⛽ Gas used for transfer : " , gasUsed.toString(), " ⛽ ");
 
     console.log(" ");
     balance_deployer_enc_old = await privateToken.balances(await deployer.getAddress());
-    console.log("Public encrypted Balance of Central Banker (read from PrivateToken contract) : ",  balance_deployer_enc_old.map(bigInt => bigInt.toString()));
+    console.log("Public encrypted Balance of \x1b[93;1mCentral Banker\x1b[0m 🏦 (read from PrivateToken contract) : ",  balance_deployer_enc_old.map(bigInt => bigInt.toString()));
     balance_userA_enc_old = await privateToken.balances(await userA.getAddress());
-    console.log("Public encrypted Balance of UserA (read from PrivateToken contract) : ",  balance_userA_enc_old.map(bigInt => bigInt.toString()));
+    console.log("Public encrypted Balance of \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩 (read from PrivateToken contract) : ",  balance_userA_enc_old.map(bigInt => bigInt.toString()));
     balance_userB_enc_old = await privateToken.balances(await userB.getAddress());
-    console.log("Public encrypted Balance of UserB (read from PrivateToken contract) : ",  balance_userB_enc_old.map(bigInt => bigInt.toString()));
+    console.log("Public encrypted Balance of \x1b[1m\x1b[96mUserB\x1b[0m 👨 (read from PrivateToken contract) : ",  balance_userB_enc_old.map(bigInt => bigInt.toString()));
     console.log(" ");
 
-    console.log(" ⏳ UserA is decrypting his received balance using his private key and solving the DLP with baby-step giant-step algorithm ⏳ ");
+    console.log(" ⏳ \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩 is decrypting his received balance using his private key and solving the DLP with baby-step giant-step algorithm ⏳ ");
     const decrypted_embedded_userA = babyjubjubUtils.exp_elgamal_decrypt_embedded(privateKeyUserA,{x:balance_userA_enc_old[0],y:balance_userA_enc_old[1]},
                                                                                   {x:balance_userA_enc_old[2],y:balance_userA_enc_old[3]});
     let decrypted_balance_userA = await runRustScriptBabyGiant(babyjubjubUtils.intToLittleEndianHex(decrypted_embedded_userA.x),
                                                                 babyjubjubUtils.intToLittleEndianHex(decrypted_embedded_userA.y));
     expect(decrypted_balance_userA).to.be.equal(10000);
-    console.log(" 🆗 UserA succesfully decrypted his new balance to be equal to 10000 🆗 ");
+    console.log(" 🆗 \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩 succesfully decrypted his new balance to be equal to 10000 🆗 ");
     console.log(" ")
 
-    console.log(" ⏳ Central Banker is computing a transfer_to_new circuit proof offchain ⏳");
+    console.log(" ⏳ \x1b[93;1mCentral Banker\x1b[0m 🏦 is computing a transfer_to_new circuit proof offchain ⏳");
     const value_sent_deployer_to_B = 20000;
     balance_deployer_enc_new = babyjubjubUtils.exp_elgamal_encrypt(publicKeyDeployer,totalSupply-value_sent_deployer_to_A-value_sent_deployer_to_B);
     let balance_userB_enc_new = babyjubjubUtils.exp_elgamal_encrypt(publicKeyUserB,value_sent_deployer_to_B);
@@ -237,37 +241,40 @@ describe("Private Token integration testing", function () {
               };
 
     proof_transfer_to_new = await proofUtils.genProof("transfer_to_new",inputs_transfer_to_new);
-    console.log(" 🆗 Central Banker successfully computed a transfer_to_new proof and checked it offchain 🆗 ");
+    console.log(" 🆗 \x1b[93;1mCentral Banker\x1b[0m 🏦 successfully computed a transfer_to_new proof and checked it offchain 🆗 ");
 
     console.log(" ");
     sliced_proof_transfer_to_new = uint8ArrayToHexString(proof_transfer_to_new.slice(16*32)); // there are 16 public inputs (bytes32) for the transfer_to_new circuit
-    await privateToken.transfer(await userB.getAddress(), 
+    tx = await privateToken.transfer(await userB.getAddress(), 
         {C1x: balance_deployer_enc_old[0], C1y: balance_deployer_enc_old[1], C2x: balance_deployer_enc_old[2], C2y: balance_deployer_enc_old[3]}, 
         {C1x: 0, C1y: 0, C2x: 0, C2y: 0}, 
         {C1x: balance_deployer_enc_new.C1.x, C1y: balance_deployer_enc_new.C1.y, C2x: balance_deployer_enc_new.C2.x, C2y: balance_deployer_enc_new.C2.y}, 
         {C1x: balance_userB_enc_new.C1.x, C1y: balance_userB_enc_new.C1.y, C2x: balance_userB_enc_new.C2.x, C2y: balance_userB_enc_new.C2.y},
         sliced_proof_transfer_to_new);
-    console.log("  ✒️  Central Banker transferred 20000 Private Tokens to UserB  ✒️   ");
+    console.log(" ✒️  \x1b[93;1mCentral Banker\x1b[0m 🏦 transferred 20000 Private Tokens to \x1b[1m\x1b[96mUserB\x1b[0m 👨  ✒️   ");
+    transactionReceipt = await ethers.provider.getTransactionReceipt(tx.hash);
+    gasUsed = transactionReceipt.gasUsed;
+    console.log(" ⛽ Gas used for transfer : " , gasUsed.toString(), " ⛽ ");
 
     console.log(" ");
     balance_deployer_enc_old = await privateToken.balances(await deployer.getAddress());
-    console.log("Public encrypted Balance of Central Banker (read from PrivateToken contract) : ",  balance_deployer_enc_old.map(bigInt => bigInt.toString()));
+    console.log("Public encrypted Balance of \x1b[93;1mCentral Banker\x1b[0m 🏦 (read from PrivateToken contract) : ",  balance_deployer_enc_old.map(bigInt => bigInt.toString()));
     balance_userA_enc_old = await privateToken.balances(await userA.getAddress());
-    console.log("Public encrypted Balance of UserA (read from PrivateToken contract) : ",  balance_userA_enc_old.map(bigInt => bigInt.toString()));
+    console.log("Public encrypted Balance of \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩 (read from PrivateToken contract) : ",  balance_userA_enc_old.map(bigInt => bigInt.toString()));
     balance_userB_enc_old = await privateToken.balances(await userB.getAddress());
-    console.log("Public encrypted Balance of UserB (read from PrivateToken contract) : ",  balance_userB_enc_old.map(bigInt => bigInt.toString()));
+    console.log("Public encrypted Balance of \x1b[1m\x1b[96mUserB\x1b[0m 👨 (read from PrivateToken contract) : ",  balance_userB_enc_old.map(bigInt => bigInt.toString()));
     console.log(" ");
 
-    console.log(" ⏳ UserB is decrypting his received balance using his private key and solving the DLP with baby-step giant-step algorithm ⏳ ");
+    console.log(" ⏳ \x1b[1m\x1b[96mUserB\x1b[0m 👨 is decrypting his received balance using his private key and solving the DLP with baby-step giant-step algorithm ⏳ ");
     let decrypted_embedded_userB = babyjubjubUtils.exp_elgamal_decrypt_embedded(privateKeyUserB,{x:balance_userB_enc_old[0],y:balance_userB_enc_old[1]},
                                                                                   {x:balance_userB_enc_old[2],y:balance_userB_enc_old[3]});
     let decrypted_balance_userB = await runRustScriptBabyGiant(babyjubjubUtils.intToLittleEndianHex(decrypted_embedded_userB.x),
                                                                 babyjubjubUtils.intToLittleEndianHex(decrypted_embedded_userB.y));
     expect(decrypted_balance_userB).to.be.equal(20000);
-    console.log(" 🆗 UserB succesfully decrypted his new balance to be equal to 20000 🆗 ");
+    console.log(" 🆗 \x1b[1m\x1b[96mUserB\x1b[0m 👨 succesfully decrypted his new balance to be equal to 20000 🆗 ");
     console.log(" ")
 
-    console.log(" ⏳ UserA is computing a transfer circuit proof offchain ⏳");
+    console.log(" ⏳ \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩 is computing a transfer circuit proof offchain ⏳");
     const value_sent_A_to_B = 100;
     balance_userA_enc_new = babyjubjubUtils.exp_elgamal_encrypt(publicKeyUserA,10000-value_sent_A_to_B);
     const delta_balance_userB_enc_new = babyjubjubUtils.exp_elgamal_encrypt(publicKeyUserB,value_sent_A_to_B);
@@ -307,34 +314,37 @@ describe("Private Token integration testing", function () {
               };
 
     const proof_transfer = await proofUtils.genProof("transfer",inputs_transfer);
-    console.log(" 🆗 UserA successfully computed a transfer proof and checked it offchain 🆗 ");
+    console.log(" 🆗 \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩 successfully computed a transfer proof and checked it offchain 🆗 ");
 
     console.log(" ");
     const sliced_proof_transfer = uint8ArrayToHexString(proof_transfer.slice(20*32)); // there are 16 public inputs (bytes32) for the transfer_to_new circuit
-    await privateToken.connect(userA).transfer(await userB.getAddress(), 
+    tx = await privateToken.connect(userA).transfer(await userB.getAddress(), 
         {C1x: balance_userA_enc_old[0], C1y: balance_userA_enc_old[1], C2x: balance_userA_enc_old[2], C2y: balance_userA_enc_old[3]}, 
         {C1x: balance_userB_enc_old[0], C1y: balance_userB_enc_old[1], C2x: balance_userB_enc_old[2], C2y: balance_userB_enc_old[3]}, 
         {C1x: balance_userA_enc_new.C1.x, C1y: balance_userA_enc_new.C1.y, C2x: balance_userA_enc_new.C2.x, C2y: balance_userA_enc_new.C2.y}, 
         {C1x: balance_userB_enc_new.C1.x, C1y: balance_userB_enc_new.C1.y, C2x: balance_userB_enc_new.C2.x, C2y: balance_userB_enc_new.C2.y},
         sliced_proof_transfer);
-    console.log("  ✒️  UserA transferred 100 Private Tokens to UserB  ✒️   ");
+    console.log(" ✒️  \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩 transferred 100 Private Tokens to \x1b[1m\x1b[96mUserB\x1b[0m 👨  ✒️   ");
+    transactionReceipt = await ethers.provider.getTransactionReceipt(tx.hash);
+    gasUsed = transactionReceipt.gasUsed;
+    console.log(" ⛽ Gas used for transfer : " , gasUsed.toString(), " ⛽ ");
 
     console.log(" ");
     balance_deployer_enc_old = await privateToken.balances(await deployer.getAddress());
-    console.log("Public encrypted Balance of Central Banker (read from PrivateToken contract) : ",  balance_deployer_enc_old.map(bigInt => bigInt.toString()));
+    console.log("Public encrypted Balance of \x1b[93;1mCentral Banker\x1b[0m 🏦 (read from PrivateToken contract) : ",  balance_deployer_enc_old.map(bigInt => bigInt.toString()));
     balance_userA_enc_old = await privateToken.balances(await userA.getAddress());
-    console.log("Public encrypted Balance of UserA (read from PrivateToken contract) : ",  balance_userA_enc_old.map(bigInt => bigInt.toString()));
+    console.log("Public encrypted Balance of \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩 (read from PrivateToken contract) : ",  balance_userA_enc_old.map(bigInt => bigInt.toString()));
     balance_userB_enc_old = await privateToken.balances(await userB.getAddress());
-    console.log("Public encrypted Balance of UserB (read from PrivateToken contract) : ",  balance_userB_enc_old.map(bigInt => bigInt.toString()));
+    console.log("Public encrypted Balance of \x1b[1m\x1b[96mUserB\x1b[0m 👨 (read from PrivateToken contract) : ",  balance_userB_enc_old.map(bigInt => bigInt.toString()));
     console.log(" ");
 
-    console.log(" ⏳ UserB is decrypting his new balance using his private key and solving the DLP with baby-step giant-step algorithm ⏳ ");
+    console.log(" ⏳ \x1b[1m\x1b[96mUserB\x1b[0m 👨 is decrypting his new balance using his private key and solving the DLP with baby-step giant-step algorithm ⏳ ");
     decrypted_embedded_userB = babyjubjubUtils.exp_elgamal_decrypt_embedded(privateKeyUserB,{x:balance_userB_enc_old[0],y:balance_userB_enc_old[1]},
                                                                                   {x:balance_userB_enc_old[2],y:balance_userB_enc_old[3]});
     decrypted_balance_userB = await runRustScriptBabyGiant(babyjubjubUtils.intToLittleEndianHex(decrypted_embedded_userB.x),
                                                                 babyjubjubUtils.intToLittleEndianHex(decrypted_embedded_userB.y));
     expect(decrypted_balance_userB).to.be.equal(20100);
-    console.log(" 🆗 UserB succesfully decrypted his new balance to be equal to 20100 🆗 ");
+    console.log(" 🆗 \x1b[1m\x1b[96mUserB\x1b[0m 👨 succesfully decrypted his new balance to be equal to 20100 🆗 ");
     console.log(" ");
     console.log(" 🔥🔥🔥 LFG 🔥🔥🔥");
 

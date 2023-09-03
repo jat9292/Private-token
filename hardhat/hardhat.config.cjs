@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("hardhat-gas-reporter");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -9,6 +10,6 @@ module.exports = {
         enabled: true,
         runs: 1000,
       },
-    },
+    }
   }
 };
