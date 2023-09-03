@@ -28,6 +28,8 @@ contract PrivateToken {
 
     mapping(address=>EncryptedBalance) public balances;
 
+    event PrivateTransfer(address indexed to, address indexed from);
+
     constructor(uint40 totalSupply_, address PKIAddress, address MintVerifierAddress, address TransferVerifierAddress, 
             address TransferToNewVerifierAddress, bytes memory proof_mint, EncryptedBalance memory  totalSupplyEncrypted) {
         PKI = PublicKeyInfrastructure(PKIAddress);
@@ -127,5 +129,6 @@ contract PrivateToken {
         }
         balances[msg.sender] = EncryptedBalanceNewMe;
         balances[to] = EncryptedBalanceNewTo;
+        emit PrivateTransfer(msg.sender,to);
     }
 }

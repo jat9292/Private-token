@@ -86,6 +86,13 @@ export function exp_elgamal_decrypt_embedded(private_key, C1, C2) {
             "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(plain_embedded[1])).reverse())};
 }
 
+export function add_points(P1, P2) { // Used for (homomorphic) addition of baby jubjub (encrypted) points
+    const Psum = babyJub.addPoint([babyJub.F.toMontgomery(_bigIntToUint8Array(P1.x).reverse()),babyJub.F.toMontgomery(_bigIntToUint8Array(P1.y).reverse())],
+            [babyJub.F.toMontgomery(_bigIntToUint8Array(P2.x).reverse()),babyJub.F.toMontgomery(_bigIntToUint8Array(P2.y).reverse())]);
+    return {"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(Psum[0])).reverse()),
+            "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(Psum[1])).reverse())};
+}
+
 export function intToLittleEndianHex(n) { // should take a BigInt and returns a string in little endian hexadecimal, of size 64, to give as input as the Rust script computing the Discrete Log with baby-step giant-step algo
     // Ensure input is a BigInt
     if (typeof n !== 'bigint') {

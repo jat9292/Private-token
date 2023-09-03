@@ -15,12 +15,11 @@ global bjj_basept_y = 1695015079846065771795862556782183455030166316162470778722
 // Code of the circuit used once at construction of the token to prove the correctness of encryption of the minted total supply.
 // In this particular case, we are using a zkSNARK only for its succintness property, not the zk property, because total supply is publicly known.
 // The alternative would have been to reimplement Baby JubJub encryption in the EVM onchain which is very gas-expensive and complex.
-fn main(private_key: Field, randomness: Field, public_key: pub Gaffine, value: pub u40, C1: pub Gaffine, C2 : pub Gaffine) { // initially wanted to put the encrypted value, i.e (C1,C2), as a public output to the circuit, but because Noir 10.3 does not support yet tuple types as outputs, I had to put it as public inputs and add a constraint verifying the equality with computed encryption at the end of the circuit
+fn main(private_key: Field, randomness: Field, public_key: pub Gaffine, value: pub Field, C1: pub Gaffine, C2 : pub Gaffine) { // initially wanted to put the encrypted value, i.e (C1,C2), as a public output to the circuit, but because Noir 10.3 does not support yet tuple types as outputs, I had to put it as public inputs and add a constraint verifying the equality with computed encryption at the end of the circuit
     let computed_public_key = bjj_priv_to_pub_key(private_key);
     assert((public_key.x == computed_public_key.x) & (public_key.y == computed_public_key.y)); // while this constraint is not strictly mandatory, we keep it to make sure that the deployer owns the private key corresponding to his registered public key
     let ciphertext: (Gaffine,Gaffine) = bjj_exp_elgamal_encrypt(public_key, value, randomness); // we encrypt the minted value with the minter's public key
     assert((ciphertext.0.x == C1.x) & (ciphertext.0.y == C1.y) & (ciphertext.1.x == C2.x) & (ciphertext.1.y == C2.y)); // the circuit outputs the correctly encrypted initial supply
-
 }
 
 #[test]
@@ -31,7 +30,7 @@ fn test_main() {
 
     // public values
     let public_key: Gaffine = bjj_priv_to_pub_key(private_key);
-    let value: u40 = 1000000000000; // the message being encrypted
+    let value: Field = 1000000000000; // the message being encrypted, should be a u40
     let (C1, C2) = bjj_exp_elgamal_encrypt(public_key, value, randomness);
 
     main(private_key, randomness, public_key,value,C1,C2);  // checks that public_key is derived from private_key and returns encrypted value and most importantly that the encrpyted value, i.e (C1,C2), is correct
@@ -45,7 +44,7 @@ fn bjj_priv_to_pub_key(private_key: Field) -> Gaffine
  bjj_affine.mul(private_key, base_pt)
 }
 
-fn bjj_exp_elgamal_encrypt(public_key: Gaffine, plaintext: u40, randomness: Field) -> (Gaffine,Gaffine) // same notations as in https://en.wikipedia.org/wiki/ElGamal_encryption 
+fn bjj_exp_elgamal_encrypt(public_key: Gaffine, plaintext: Field, randomness: Field) -> (Gaffine,Gaffine) // same notations as in https://en.wikipedia.org/wiki/ElGamal_encryption 
 {
  let bjj_affine: AffineCurve = AffineCurve::new(bjj_a, bjj_d, Gaffine::new(bjj_generator_x, bjj_generator_y));
  let base_pt: Gaffine = Gaffine::new(bjj_basept_x, bjj_basept_y);

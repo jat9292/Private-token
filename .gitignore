@@ -3,3 +3,4 @@ out/
 cache/
 
 circuits/exponential_elgamal/babygiant/target
+circuits/exponential_elgamal/babygiant_giant/target
