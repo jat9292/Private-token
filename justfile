@@ -8,7 +8,7 @@ dev:
     cd frontend && npm i && npm run dev
 
 test:
-    cargo build --release --manifest-path circuits/exponential_elgamal/babygiant_native/Cargo.toml && cd hardhat && npm i && npx hardhat test
+    cargo build --release --manifest-path circuits/exponential_elgamal/babygiant_native/Cargo.toml && cd utils && npm i &&  cd ../hardhat && npm i && npx hardhat test
 
 clean:
     cd frontend && rm -rf node_modules && cd .. && cd circuits/exponential_elgamal/babygiant/ && cargo clean && rm -rf pkg && rm Cargo.lock

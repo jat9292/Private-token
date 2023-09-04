@@ -3,4 +3,6 @@ out/
 cache/
 
 circuits/exponential_elgamal/babygiant/target/
+circuits/exponential_elgamal/babygiant/Cargo.lock
 circuits/exponential_elgamal/babygiant_native/target/
+circuits/exponential_elgamal/babygiant_native/Cargo.lock
