@@ -17,10 +17,6 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
-use std::sync::mpsc;
-use std::thread;
-use num_cpus;
-
 
 fn deserialize_affine(x: &str, y: &str) -> GroupAffine<EdwardsParameters> {
     let x_coord = Fq::from_str(x).unwrap();
@@ -49,62 +45,43 @@ pub fn baby_giant(
     by: &str,
     bt: &str,
     bz: &str,
-) -> Option<u64> {
+) -> u64 {
     let a = deserialize_affine(ax, ay);
     let b = deserialize_projective(bx, by, bt, bz);
 
     internal_baby_giant(max_bitwidth, &a, &b)
 }
 
-fn internal_baby_giant(max_bitwidth: u64, a: &GroupAffine<EdwardsParameters>, b: &GroupProjective<EdwardsParameters>) -> Option<u64> {
+pub fn internal_baby_giant(
+    max_bitwidth: u64,
+    a: &GroupAffine<EdwardsParameters>,
+    b: &GroupProjective<EdwardsParameters>,
+) -> u64 {
     let m = 1u64 << (max_bitwidth / 2);
 
-    let threads = num_cpus::get() as u64;
-    let chunk_size = m / threads;
-    let (tx, rx) = mpsc::channel();
+    let mut table = HashMap::new();
+    // NOTE: equality and hashing (used for HashMap) does not perform as expected
+    // for projective representation (because coordinates are ambiguous), so switching
+    // to affine coordinates here
+    let mut v = a.mul(Fr::new(BigInteger256::from(0))).into_affine();
+    let a1 = a.mul(Fr::new(BigInteger256::from(1))).into_affine();
 
-    for idx in 0..threads {
-        let a = a.clone();
-        let b = b.clone();
-        let tx = tx.clone();
-        thread::spawn(move || {
-            let start = idx * chunk_size;
-            let end = if idx == threads - 1 { m } else { start + chunk_size };
-            let mut table = HashMap::new();
-
-            // NOTE: equality and hashing (used for HashMap) does not perform as expected
-            // for projective representation (because coordinates are ambiguous), so switching
-            // to affine coordinates here
-            let mut v =  a.mul(Fr::new(BigInteger256::from(start))).into_affine();
-            let a1 = a.mul(Fr::new(BigInteger256::from(1))).into_affine();
-
-            for j in start..end { // baby_steps
-                table.insert(v, j);
-                v =  v + a1; // original zkay version was doing scalar multiplication inside the loop, we replaced it by constant increment, because addition is faster than scalar multiplication on the elliptic curve, this lead to a 7x speedup
-            }
-            let am = a.mul(Fr::new(BigInteger256::from(m)));
-            let mut gamma = b.clone();
-
-            for i in 0..m { // giant_steps
-                if let Some(j) = table.get(&gamma.into_affine()) {
-                    tx.send(Some(i * m + j)).unwrap();
-                    return;
-                }
-                gamma = gamma - &am;
-                
-            }
-            tx.send(None).unwrap();
-        });
+    for j in 0..m {
+        // baby_steps
+        table.insert(v, j);
+        v = v + a1; // original zkay version was doing scalar multiplication inside the loop, we replaced it by constant increment, because addition is faster than scalar multiplication on the elliptic curve, this lead to a 7x speedup
     }
+    let am = a.mul(Fr::new(BigInteger256::from(m)));
+    let mut gamma = b.clone();
 
-    let mut result = None;
-    for _ in 0..threads {
-        if let Some(res) = rx.recv().unwrap() {
-            result = Some(res);
-            break;
+    for i in 0..m {
+        // giant_steps
+        if let Some(j) = table.get(&gamma.into_affine()) {
+            return i * m + j;
         }
+        gamma = gamma - &am;
     }
-    result
+    panic!("No discrete log found");
 }
 
 pub fn parse_le_bytes_str(s: &str) -> BigInteger256 {
@@ -145,7 +122,7 @@ pub fn do_compute_dlog(x: &str, y: &str) -> u64 {
     assert!(BabyJubJub::is_in_correct_subgroup_assuming_on_curve(&b));
     let b = b.mul(Fr::new(BigInteger256::from(1)));
 
-    internal_baby_giant(40, &a, &b).unwrap()
+    internal_baby_giant(40, &a, &b)
 }
 
 #[cfg(test)]
@@ -158,7 +135,7 @@ mod tests {
                                    "10c3d3d9d7b645fae3488ac1783f253a56fe190387c6d643d6a74631d5b2bd00");
         assert_eq!(65545, dlog);
     }*/
-    /*
+
     #[test]
     fn test_compute_dlog() {
         let dlog = do_compute_dlog(
@@ -166,7 +143,7 @@ mod tests {
             "123b986383d08a0ca623bf8c59288032c8ce8054ebc415a53114bec295047a0a",
         );
         assert_eq!(4294967295, dlog);
-    }*/
+    }
     /*
     #[test]
     fn test_compute_dlog() {
@@ -174,13 +151,13 @@ mod tests {
                                    "dadb3067e6dd4e120cdb93fb4d9b2fc8af60a50ff0a68680ffc9d12a5e451f01");
         assert_eq!(943594123598, dlog);
     }*/
-    
+    /*
     #[test]
     fn test_compute_dlog() {
         let dlog = do_compute_dlog("02d02e26730623f70bb5974a86aabcbdad1d60a60d9bd7f3f4dfab9ae9574908",
                                    "849761d6c7e79ce5d7a42fac89153833fbd109d4351e97a8059585a86555b406");
         assert_eq!(1099511627775, dlog);
-    }
+    }*/
 }
 
 // fn main() {

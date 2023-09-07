@@ -32,9 +32,7 @@ fn baby_giant(max_bitwidth: u64, a: &GroupAffine<EdwardsParameters>, b: &GroupPr
         thread::spawn(move || {
             let start = idx * chunk_size;
             let end = if idx == threads - 1 { m } else { start + chunk_size };
-
             let mut table = HashMap::new();
-
 
             // NOTE: equality and hashing (used for HashMap) does not perform as expected
             // for projective representation (because coordinates are ambiguous), so switching
@@ -61,9 +59,6 @@ fn baby_giant(max_bitwidth: u64, a: &GroupAffine<EdwardsParameters>, b: &GroupPr
         });
     }
 
-
-
-
     let mut result = None;
     for _ in 0..threads {
         if let Some(res) = rx.recv().unwrap() {
@@ -71,9 +66,7 @@ fn baby_giant(max_bitwidth: u64, a: &GroupAffine<EdwardsParameters>, b: &GroupPr
             break;
         }
     }
-
     result
-
 }
 
 fn parse_le_bytes_str(s: &str) -> BigInteger256 {
