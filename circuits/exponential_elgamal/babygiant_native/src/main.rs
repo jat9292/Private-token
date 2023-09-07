@@ -16,7 +16,6 @@ use std::env;
 use std::collections::HashMap;
 use std::sync::mpsc;
 use std::thread;
-use std::time::Instant;
 use num_cpus;
 
 fn baby_giant(max_bitwidth: u64, a: &GroupAffine<EdwardsParameters>, b: &GroupProjective<EdwardsParameters>) -> Option<u64> {
@@ -148,7 +147,6 @@ mod tests {
 
 
 fn main() {
-    let start_time = Instant::now();
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 3 {
@@ -157,7 +155,4 @@ fn main() {
     }
 
     println!("{}", do_compute_dlog(&args[1], &args[2]));
-    
-    let duration = start_time.elapsed();
-    println!("Total Time elapsed is: {:?}", duration);
 }
