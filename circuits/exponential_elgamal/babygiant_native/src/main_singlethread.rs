@@ -2,9 +2,9 @@
 Two main differences with respect to zkay : 
 1/ we replaced scalar multiplication inside the baby steps loop by point addition, this lead to a 7x speedup on average, allowing to decrypt 
 uint40 instead of just uint32 in less than 10 seconds (on a Mac M1 chip), this is why we replaced the 32 argument by 40 in the baby_giant call.
-2/ We added multithreading for another 2.5x improvement, so eveen in the browser (WASM overhead) this should be practical for uint40 in less than 10s in the worst case.
-3/ Another big difference is that the imported arkworks library uses the Edwards form instead of the Twisted Edwards form which is used in Noir for the baby Jubjub curve, 
-so we did a coordinate transform when encoding points on the Edwards form, using the coordinates given by the Noir implementation. */
+2/ Another big difference is that the imported arkworks library uses the Edwards form instead of the Twisted Edwards form which is used in Noir for the baby Jubjub curve, 
+so we did a coordinate transform when encoding points on the Edwards form, using the coordinates given by the Noir implementation. 
+*Note* : This could be optimized even further: we could win another 8-16x speedup by multithreading (making decryption of uint48 practical in around 10s) and maybe even more by upgrading arkworks to its latest version (#TODO) */ 
 
 use ark_ed_on_bn254::{EdwardsAffine as BabyJubJub, Fr, Fq, EdwardsParameters};
 use ark_ff::{BigInteger256, field_new, PrimeField, BigInteger, SquareRootField};
@@ -14,67 +14,32 @@ use hex;
 use std::env;
 
 use std::collections::HashMap;
-use std::sync::mpsc;
-use std::thread;
-use std::time::Instant;
-use num_cpus;
 
-fn baby_giant(max_bitwidth: u64, a: &GroupAffine<EdwardsParameters>, b: &GroupProjective<EdwardsParameters>) -> Option<u64> {
+fn baby_giant(max_bitwidth: u64, a: &GroupAffine<EdwardsParameters>, b: &GroupProjective<EdwardsParameters>) -> u64 {
     let m = 1u64 << (max_bitwidth / 2);
 
-    let threads = num_cpus::get() as u64;
-    let chunk_size = m / threads;
-    let (tx, rx) = mpsc::channel();
+    let mut table = HashMap::new();
+    // NOTE: equality and hashing (used for HashMap) does not perform as expected
+    // for projective representation (because coordinates are ambiguous), so switching
+    // to affine coordinates here
+    let mut v =  a.mul(Fr::new(BigInteger256::from(0))).into_affine();
+    let a1 = a.mul(Fr::new(BigInteger256::from(1))).into_affine();
 
-    for idx in 0..threads {
-        let a = a.clone();
-        let b = b.clone();
-        let tx = tx.clone();
-        thread::spawn(move || {
-            let start = idx * chunk_size;
-            let end = if idx == threads - 1 { m } else { start + chunk_size };
-
-            let mut table = HashMap::new();
-
-
-            // NOTE: equality and hashing (used for HashMap) does not perform as expected
-            // for projective representation (because coordinates are ambiguous), so switching
-            // to affine coordinates here
-            let mut v =  a.mul(Fr::new(BigInteger256::from(start))).into_affine();
-            let a1 = a.mul(Fr::new(BigInteger256::from(1))).into_affine();
-
-            for j in start..end { // baby_steps
-                table.insert(v, j);
-                v =  v + a1; // original zkay version was doing scalar multiplication inside the loop, we replaced it by constant increment, because addition is faster than scalar multiplication on the elliptic curve, this lead to a 7x speedup
-            }
-            let am = a.mul(Fr::new(BigInteger256::from(m)));
-            let mut gamma = b.clone();
-
-            for i in 0..m { // giant_steps
-                if let Some(j) = table.get(&gamma.into_affine()) {
-                    tx.send(Some(i * m + j)).unwrap();
-                    return;
-                }
-                gamma = gamma - &am;
-                
-            }
-            tx.send(None).unwrap();
-        });
+    for j in 0..m { // baby_steps
+        table.insert(v, j);
+        v =  v + a1; // original zkay version was doing scalar multiplication inside the loop, we replaced it by constant increment, because addition is faster than scalar multiplication on the elliptic curve, this lead to a 7x speedup
     }
+    let am = a.mul(Fr::new(BigInteger256::from(m)));
+    let mut gamma = b.clone();
 
-
-
-
-    let mut result = None;
-    for _ in 0..threads {
-        if let Some(res) = rx.recv().unwrap() {
-            result = Some(res);
-            break;
+    for i in 0..m { // giant_steps
+        if let Some(j) = table.get(&gamma.into_affine()) {
+            return i*m + j;
         }
+        gamma = gamma - &am;
+        
     }
-
-    result
-
+    panic!("No discrete log found");
 }
 
 fn parse_le_bytes_str(s: &str) -> BigInteger256 {
@@ -108,7 +73,7 @@ fn do_compute_dlog(x: &str, y: &str) -> u64 {
     assert!(BabyJubJub::is_in_correct_subgroup_assuming_on_curve(&b));
     let b = b.mul(Fr::new(BigInteger256::from(1)));
 
-    baby_giant(40, &a, &b).unwrap()
+    baby_giant(40, &a, &b)
 }
 
 #[cfg(test)]
@@ -148,7 +113,6 @@ mod tests {
 
 
 fn main() {
-    let start_time = Instant::now();
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 3 {
@@ -157,7 +121,4 @@ fn main() {
     }
 
     println!("{}", do_compute_dlog(&args[1], &args[2]));
-    
-    let duration = start_time.elapsed();
-    println!("Total Time elapsed is: {:?}", duration);
 }
