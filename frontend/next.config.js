@@ -14,6 +14,8 @@ module.exports = {
     );
 
     config.experiments = { layers: true, syncWebAssembly: true };
+    config.resolve.fallback = { fs: false, net: false, tls: false };
+    config.externals.push("pino-pretty", "lokijs", "encoding");
 
     return config;
   },

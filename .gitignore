@@ -9,3 +9,5 @@ circuits/exponential_elgamal/babygiant_native/Cargo.lock
 
 hardhat/crs/
 utils/crs/
+
+.env
