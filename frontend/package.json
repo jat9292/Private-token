@@ -39,5 +39,6 @@
   "devDependencies": {
     "@wasm-tool/wasm-pack-plugin": "^1.7.0",
     "terser-webpack-plugin": "^5.3.9"
-  }
+  },
+  "type": "module"
 }

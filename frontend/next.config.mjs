@@ -1,8 +1,14 @@
 /** @type {import('next').NextConfig} */
-const path = require("path");
-const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 
-module.exports = {
+import path from "path";
+import WasmPackPlugin from "@wasm-tool/wasm-pack-plugin";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const nextConfig = {
   webpack(config, options) {
     config.plugins.push(
       new WasmPackPlugin({
@@ -16,7 +22,11 @@ module.exports = {
     config.experiments = { layers: true, syncWebAssembly: true };
     config.resolve.fallback = { fs: false, net: false, tls: false };
     config.externals.push("pino-pretty", "lokijs", "encoding");
-
+    // options.experimental.esmExternals = "loose";
     return config;
   },
+  experimental: {
+    esmExternals: "loose",
+  },
 };
+export default nextConfig;
