@@ -1,17 +1,17 @@
 "use client";
 
 import { generatePrivateAndPublicKey } from "../lib/bjj_utils.js";
-// import { generatePrivateAndPublicKey } from "../../utils/babyjubjub_utils.js";
 import { useState, useEffect } from "react";
 
 function KeyGenerator() {
-  const [keys, setKeys] = useState<{
-    privateKey: BigInt;
-    publicKey: any;
-  } | null>(null);
+  const [keys, setKeys] = useState({
+    privateKey: BigInt(0),
+    publicKey: { x: BigInt(0), y: BigInt(0) },
+  });
 
-  const handleGenerate = () => {
-    const generatedKeys = generatePrivateAndPublicKey();
+  const handleGenerate = async () => {
+    const generatedKeys = await generatePrivateAndPublicKey();
+    console.log(generatedKeys);
     setKeys(generatedKeys);
   };
 
@@ -24,8 +24,11 @@ function KeyGenerator() {
             <strong>Private Key:</strong> {keys.privateKey.toString()}
           </p>
           <p>
-            <strong>Public Key:</strong> {keys.publicKey.toString()}
-          </p>{" "}
+            <strong>Public Key X:</strong> {keys.publicKey.x.toString()}
+          </p>
+          <p>
+            <strong>Public Key Y:</strong> {keys.publicKey.y.toString()}
+          </p>
         </div>
       )}
     </div>
