@@ -45,17 +45,21 @@ pub fn baby_giant(
     by: &str,
     bt: &str,
     bz: &str,
+    min_range: u64,
+    max_range: u64
 ) -> u64 {
     let a = deserialize_affine(ax, ay);
     let b = deserialize_projective(bx, by, bt, bz);
 
-    internal_baby_giant(max_bitwidth, &a, &b)
+    internal_baby_giant(max_bitwidth, &a, &b, min_range, max_range)
 }
 
 pub fn internal_baby_giant(
     max_bitwidth: u64,
     a: &GroupAffine<EdwardsParameters>,
     b: &GroupProjective<EdwardsParameters>,
+    min_range: u64,
+    max_range: u64
 ) -> u64 {
     let m = 1u64 << (max_bitwidth / 2);
 
@@ -63,10 +67,10 @@ pub fn internal_baby_giant(
     // NOTE: equality and hashing (used for HashMap) does not perform as expected
     // for projective representation (because coordinates are ambiguous), so switching
     // to affine coordinates here
-    let mut v = a.mul(Fr::new(BigInteger256::from(0))).into_affine();
+    let mut v = a.mul(Fr::new(BigInteger256::from(min_range))).into_affine();
     let a1 = a.mul(Fr::new(BigInteger256::from(1))).into_affine();
 
-    for j in 0..m {
+    for j in min_range..max_range {
         // baby_steps
         table.insert(v, j);
         v = v + a1; // original zkay version was doing scalar multiplication inside the loop, we replaced it by constant increment, because addition is faster than scalar multiplication on the elliptic curve, this lead to a 7x speedup
@@ -100,7 +104,7 @@ pub fn parse_le_bytes_str(s: &str) -> BigInteger256 {
 }
 
 #[wasm_bindgen]
-pub fn do_compute_dlog(x: &str, y: &str) -> u64 {
+pub fn do_compute_dlog(x: &str, y: &str, min_range: u64, max_range: u64) -> u64 {
     // x and y are in little-endian hex string format
     let coeff_twisted = field_new!(Fq, "168700").sqrt().unwrap(); // this coeff_twisted was introduced to transform the coordinates of baby Jubjub points from the Twisted Edwards form coming from Noir, to the Edwards form compatible with arkworks
     let gx = field_new!(
@@ -122,51 +126,13 @@ pub fn do_compute_dlog(x: &str, y: &str) -> u64 {
     assert!(BabyJubJub::is_in_correct_subgroup_assuming_on_curve(&b));
     let b = b.mul(Fr::new(BigInteger256::from(1)));
 
-    internal_baby_giant(40, &a, &b)
+    internal_baby_giant(40, &a, &b, min_range, max_range)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    /*#[test]
+#[test]
     fn test_compute_dlog() {
         let dlog = do_compute_dlog("05c8f08545f6882bad9807a929ab4685d47216b8422d61ab49e3bed0cb12e705",
-                                   "10c3d3d9d7b645fae3488ac1783f253a56fe190387c6d643d6a74631d5b2bd00");
+                                   "10c3d3d9d7b645fae3488ac1783f253a56fe190387c6d643d6a74631d5b2bd00",
+                                   0, 1048576);
         assert_eq!(65545, dlog);
-    }*/
-
-    #[test]
-    fn test_compute_dlog() {
-        let dlog = do_compute_dlog(
-            "cad3cd30e863eb0e2ed2ef543b5a7fe4f26a06dfb08828542cdf2487237bf500",
-            "123b986383d08a0ca623bf8c59288032c8ce8054ebc415a53114bec295047a0a",
-        );
-        assert_eq!(4294967295, dlog);
-    }
-    /*
-    #[test]
-    fn test_compute_dlog() {
-        let dlog = do_compute_dlog("f78559023c89207614e4677b86354a3588d443bdbe97f2b79c7c5e5affee382f",
-                                   "dadb3067e6dd4e120cdb93fb4d9b2fc8af60a50ff0a68680ffc9d12a5e451f01");
-        assert_eq!(943594123598, dlog);
-    }*/
-    /*
-    #[test]
-    fn test_compute_dlog() {
-        let dlog = do_compute_dlog("02d02e26730623f70bb5974a86aabcbdad1d60a60d9bd7f3f4dfab9ae9574908",
-                                   "849761d6c7e79ce5d7a42fac89153833fbd109d4351e97a8059585a86555b406");
-        assert_eq!(1099511627775, dlog);
-    }*/
 }
-
-// fn main() {
-//     let args: Vec<String> = env::args().collect();
-
-//     if args.len() < 3 {
-//         eprintln!("Please provide two string arguments.");
-//         return;
-//     }
-
-//     println!("{}", do_compute_dlog(&args[1], &args[2]));
-// }

@@ -8,21 +8,42 @@ export default function BabyGiantCalculator() {
   const [Cx, setCx] = useState("");
   const [Cy, setCy] = useState("");
   const [result, setResult] = useState("");
+  const [duration, setDuration] = useState("");
+  
+  
 
-  useEffect(() => {
-    // Dynamic import of the Wasm module
-    import("../../circuits/exponential_elgamal/babygiant/pkg/index.js")
-      .then((module) => {
-        wasm = module;
-      })
-      .catch((error) => {
-        console.error("Failed to load the Wasm module:", error);
-      });
-  }, []);
 
-  const calculate = () => {
-    const output = wasm.do_compute_dlog(Cx, Cy);
-    setResult(output.toString());
+  const calculate = async () => {
+    setResult("🌀 Computing, this should not take more than 10 seconds*...\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0(*on a M1 MacBook Pro)");
+    const startTime = performance.now();
+    const numberOfWorkers = Math.max(1,window.navigator.hardwareConcurrency-2) || 8; // Default to 8 if the property isn't supported
+    let workersCompleted = 0;
+    let found = false;
+    async function onWorkerMessage(event: any) {
+      workersCompleted++;
+      if (event.data!=="dl_not_found") {
+        setResult(event.data.toString());
+        const duration_ = performance.now()-startTime;
+        setDuration(duration_.toString());
+        found = true;
+      }
+      if ((workersCompleted===numberOfWorkers) && !found){
+        setResult("Discrete Log not found");
+
+      }
+    }
+    let n = 1048576; // sqrt(max(uint40))
+    let chunkSize = Math.ceil(n / numberOfWorkers);
+
+    for (let i = 0; i < numberOfWorkers; i++) {
+      const myWorker = new Worker(new URL('./worker_babygiant.js', import.meta.url));
+      myWorker.onmessage = onWorkerMessage;
+  
+      let start = i * chunkSize + 1;
+      let end = Math.min(n, start + chunkSize-1);
+      myWorker.postMessage({ Cx: Cx, Cy: Cy, min_range: start, max_range: end });
+    }
+
   };
 
   return (
@@ -50,7 +71,7 @@ export default function BabyGiantCalculator() {
       </div>
       <button onClick={calculate}>Calculate</button>
 
-      {result !== null && <div>Result: {result}</div>}
+      {result !== null && <div>Result: {result} <br/> Duration: {duration}</div>}
     </div>
   );
 }
