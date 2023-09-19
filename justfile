@@ -12,3 +12,9 @@ test:
 
 clean:
     cd frontend && rm -rf node_modules && cd .. && cd circuits/exponential_elgamal/babygiant/ && cargo clean && rm -rf pkg && rm Cargo.lock
+    
+da: ## Deploy to anvil
+    cd deploy && forge script Deploy -f localhost
+
+dh: ## Deploy to hardhat node
+    cd hardhat && npx hardhat node 
