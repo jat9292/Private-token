@@ -1,6 +1,6 @@
 "use client";
 
-import { generatePrivateAndPublicKey } from "../lib/bjj_utils.js";
+import { generatePrivateAndPublicKey } from "./bjj_utils.js";
 import { useState, useEffect } from "react";
 
 function KeyGenerator() {

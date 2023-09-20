@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import Babygiant from "../lib/Babygiant";
+import Babygiant from "../components/Babygiant";
 import KeyGenerator from "../components/KeyGenerator";
 export default function Home() {
   return (
