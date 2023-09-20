@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import SpinnerComponent from "../components/SpinnerComponent";
 
 let wasm: any;
 
@@ -9,12 +10,14 @@ export default function BabyGiantCalculator() {
   const [Cy, setCy] = useState("");
   const [result, setResult] = useState("");
   const [duration, setDuration] = useState("");
+  const [computing, setComputing] = useState(false);
   
-  
+
 
 
   const calculate = async () => {
-    setResult("🌀 Computing, this should not take more than 10 seconds*...\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0(*on a M1 MacBook Pro)");
+    setComputing(true);
+    setResult(" Computing, this should not take more than 10 seconds*...");
     const startTime = performance.now();
     const numberOfWorkers = Math.max(1,window.navigator.hardwareConcurrency-2) || 8; // Default to 8 if the property isn't supported
     let workersCompleted = 0;
@@ -26,9 +29,11 @@ export default function BabyGiantCalculator() {
         const duration_ = performance.now()-startTime;
         setDuration(duration_.toString());
         found = true;
+        setComputing(false);
       }
       if ((workersCompleted===numberOfWorkers) && !found){
         setResult("Discrete Log not found");
+        setComputing(false);
 
       }
     }
@@ -71,7 +76,7 @@ export default function BabyGiantCalculator() {
       </div>
       <button onClick={calculate}>Calculate</button>
 
-      {result !== null && <div>Result: {result} <br/> Duration: {duration}</div>}
+      <div>Result:  {!computing || <SpinnerComponent />} {result}  {!computing ||(<span style={{ fontSize: '12px' }}>(*on a M1 MacBook Pro) </span>)} <br/> Duration: {duration}</div>
     </div>
   );
 }
