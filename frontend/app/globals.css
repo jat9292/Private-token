@@ -1,6 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body > div {
+  margin-left: 1rem;
+}
+
+button {
+  margin-left: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  background-color: #3B82F6;
+  color: #ffffff;
+  border: 1px solid #3B82F6;
+  border-radius: 0.25rem;
+  transition: background-color 150ms ease-in-out;
+}
+  
+button:hover {
+  background-color: #2563EB;
+}
+
+button:focus {
+  outline: none;
+  border-color: #1E3A8A;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+}
  
 @layer base {
   :root {

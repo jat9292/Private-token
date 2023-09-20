@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Private Token",
-  description: "Homomorphic, zk-SNARK private token",
+  description: "Token with private balances using zkSNARKs and Homomorphic Encryption",
 };
 
 function RootLayout({ children }: { children: React.ReactNode }) {
