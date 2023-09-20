@@ -7,6 +7,9 @@ wp:
 dev:
     cd frontend && npm i && npm run dev
 
+d:
+    cd frontend && bun run dev
+
 test:
     cargo build --release --manifest-path circuits/exponential_elgamal/babygiant_native/Cargo.toml && cd utils && npm i &&  cd ../hardhat && npm i && npx hardhat test
 
@@ -18,3 +21,6 @@ da: ## Deploy to anvil
 
 dh: ## Deploy to hardhat node
     cd hardhat && npx hardhat node 
+
+gen: ## Wagmi generate
+    cd frontend && npx wagmi generate

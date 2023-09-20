@@ -11,3 +11,5 @@ hardhat/crs/
 utils/crs/
 
 .env
+
+frontend/lib/wagmiGenerated.ts
