@@ -75,7 +75,7 @@ export default function BabyGiantCalculator() {
       <div>
       </div>
       <button onClick={calculate}> Calculate </button>
-      <div style={{ lineHeight: "2.5" }}>Result:  {!computing || <SpinnerComponent />} {result}  {!computing ||(<span style={{ fontSize: '12px' }}>(*on a M1 MacBook Pro) </span>)} <br/> Duration: {duration}</div>
+      <div style={{ lineHeight: "2.5" }}>Result:  {computing && <SpinnerComponent />} {result}  {computing &&(<span style={{ fontSize: '12px' }}>(*on a M1 MacBook Pro) </span>)} <br/> Duration: {duration}</div>
     </div>
   );
 }

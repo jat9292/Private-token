@@ -4,6 +4,10 @@ const path = require("path");
 
 let babyjubjubUtils;
 
+require("dotenv").config();
+
+const CHAINNAME = process.env.CHAINNAME
+
 async function loadUtils() {
   babyjubjubUtils = await import("../../utils/babyjubjub_utils.js");
   proofUtils = await import("../../utils/proof_utils.js");
@@ -43,18 +47,18 @@ async function deployFunc(hre) {
 
   const sliced_proof_mint = uint8ArrayToHexString(proof_mint.slice(7 * 32)); // bb.js appends the public inputs to the proof, and there are 7 public inputs (bytes32) for the mint circuit
 
-  const addressMUV = getAddrFromDeployments("localhost", "MintUltraVerifier");
+  const addressMUV = getAddrFromDeployments(CHAINNAME, "MintUltraVerifier");
   const addressTransferUltraVerifier = getAddrFromDeployments(
-    "localhost",
+    CHAINNAME,
     "TransferUltraVerifier"
   );
   const addressTransferToNewUltraVerifier = getAddrFromDeployments(
-    "localhost",
+    CHAINNAME,
     "TransferToNewUltraVerifier"
   );
 
   const addressPubKeyInfra = getAddrFromDeployments(
-    "localhost",
+    CHAINNAME,
     "PublicKeyInfrastructure"
   );
 
