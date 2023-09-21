@@ -24,3 +24,9 @@ dh: ## Deploy to hardhat node
 
 gen: ## Wagmi generate
     cd frontend && npx wagmi generate
+
+ds:
+    cd hardhat && npx hardhat deploy --network sepolia
+
+verify:
+    cd hardhat && npx hardhat --network sepolia etherscan-verify
