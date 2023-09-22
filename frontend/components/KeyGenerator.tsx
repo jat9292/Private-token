@@ -74,8 +74,9 @@ export default function KeyGenerator() {
 
   return (
     <div>
-      <button onClick={handleGenerate}>Generate Keys</button>
-      {keys && (
+      <button onClick={handleGenerate}>Generate New Keys</button> - or alternatively :
+      <button>Use already owned public key</button>
+      {
         <div>
           <p>
             <strong>Private Key:</strong> {(keys.publicKey.x.toString()+keys.publicKey.y.toString()!='00') &&<div style={{ display: 'inline-block' }}>You should have copied it and saved it already (if not regenerate new keys)</div>}
@@ -87,9 +88,9 @@ export default function KeyGenerator() {
             <strong>Public Key Y:</strong> {keys.publicKey.y.toString()}
           </p>
         </div>
-      )}
+      }
       <Modal isOpen={isOpen} onRequestClose={() => setIsOpen(false)} style={modalStyle} shouldCloseOnOverlayClick={false}>
-      {keys && (
+      {
         <div>
           <p>
             <strong>Private Key: <div style={{ color: 'red' }}>/ ! \ You MUST copy and save it somewhere safe and NEVER share it with a third-party / ! \ <br/>
@@ -106,8 +107,7 @@ export default function KeyGenerator() {
           </p>
           <br/>
         </div>
-        
-      )}
+      }
         {!wasCopied && <button className="bg-gray-300 text-gray-600 cursor-not-allowed" disabled >OK</button>}
         {wasCopied && <button onClick={() => {setIsOpen(false);setWasCopied(false)}}>OK</button>}
       </Modal>

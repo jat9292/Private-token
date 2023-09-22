@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useAccount } from "wagmi";
 
 export default function JsonToList( ) {
+    const { isConnected } = useAccount();
     const [already_deployed_private_tokens, setAlready_deployed_private_tokens] = useState("");
     useEffect(() => {
         async function fetchData() {
@@ -17,10 +19,14 @@ export default function JsonToList( ) {
         fetchData();
     }, []);
     return (
-        <ul>
-            {Object.entries(already_deployed_private_tokens).map(([key, value]) => (
-                <li key={key}>{key}: {value}</li>
-            ))}
-        </ul>
-    );
+        <>
+            {isConnected && (
+                <ul>
+                    {Object.entries(already_deployed_private_tokens).map(([key, value]) => (
+                        <li key={key}>{key}: {value}</li>
+                    ))}
+                </ul>
+            )}
+        </>
+    )
 }

@@ -11,7 +11,7 @@ import SpinnerComponent from "./SpinnerComponent";
 
 
 
-export default function DeployPKI() {
+export default function DeployPKI({onChange}) {
   const [deploying, setDeploying] = useState(false);
   const [deployed, setDeployed] = useState(false);
   const { isConnected } = useAccount();
@@ -31,6 +31,7 @@ export default function DeployPKI() {
       let constractAddress = contract_.address;
       setContract(constractAddress);
       setDeployed(true);
+      onChange(constractAddress);
     }
     catch {
       setDeploying(false);
@@ -40,11 +41,11 @@ export default function DeployPKI() {
 
   return (
     <div>
+      {isConnected && <>Step 1 : Deploy Public Key Infrastructure smart contract (PKI): <br/> </> }
       {(isConnected && !deploying && !deployed)  && <button onClick={deployPKI}>Deploy PKI</button>}
       {(isConnected && deploying && !deployed)  && <button ><SpinnerComponent /> Deploying PKI...</button> }
       {(isConnected && deployed)  && <button className="bg-gray-300 text-gray-600 cursor-not-allowed" disabled >Deploy PKI</button> }
       {(isConnected && contract)  && <div>PKI has been deployed at : {contract}</div> }
     </div>
-    
   );
 }
