@@ -9,6 +9,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const nextConfig = {
+  // permits loading of the worker file (barretenberg.js):
+  experimental: {
+    esmExternals: 'loose',
+  },
   webpack(config, options) {
     config.plugins.push(
       new WasmPackPlugin({
@@ -28,5 +32,24 @@ const nextConfig = {
   experimental: {
     esmExternals: "loose",
   },
+  // allows for local running of multithreads:
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'require-corp',
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+        ],
+      },
+    ];
+  },
 };
+
 export default nextConfig;

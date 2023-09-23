@@ -7,11 +7,7 @@ import { useAccount, useConnect } from "wagmi";
 import SpinnerComponent from "./SpinnerComponent";
 
 
-
-
-
-
-export default function DeployPKI({onChange}) {
+export default function DeployPKI({onChange}:{onChange:any}) {
   const [deploying, setDeploying] = useState(false);
   const [deployed, setDeployed] = useState(false);
   const { isConnected } = useAccount();
@@ -20,7 +16,7 @@ export default function DeployPKI({onChange}) {
   async function deployPKI(){
     let contract_;
     const num_block_confirmation = 1;
-    const provider = new providers.Web3Provider(window.ethereum);
+    const provider = new providers.Web3Provider(window?.ethereum);
     const [address] = await provider.listAccounts();
     const signer = provider.getSigner(address);
     const contractFactory = new ContractFactory(abi, bytecode, signer);
@@ -41,11 +37,11 @@ export default function DeployPKI({onChange}) {
 
   return (
     <div>
-      {isConnected && <>Step 1 : Deploy Public Key Infrastructure smart contract (PKI): <br/> </> }
+      {isConnected && <>&bull; <u>Step 1</u> : Deploy Public Key Infrastructure smart contract (PKI): <br/> </> }
       {(isConnected && !deploying && !deployed)  && <button onClick={deployPKI}>Deploy PKI</button>}
       {(isConnected && deploying && !deployed)  && <button ><SpinnerComponent /> Deploying PKI...</button> }
       {(isConnected && deployed)  && <button className="bg-gray-300 text-gray-600 cursor-not-allowed" disabled >Deploy PKI</button> }
-      {(isConnected && contract)  && <div>PKI has been deployed at : {contract}</div> }
+      {(isConnected && contract)  && <div>PKI has been deployed at : <a href={`https://sepolia.etherscan.io/address/`+contract } style={{textDecoration: "underline"}} target="_blank" rel="noopener noreferrer">{contract}</a></div>}
     </div>
   );
 }

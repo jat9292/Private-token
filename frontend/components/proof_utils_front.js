@@ -1,15 +1,20 @@
-import circuit_mint from '../circuits/mint/target/mint.json' assert { type: 'json' };
-import circuit_transfer from '../circuits/transfer/target/transfer.json' assert { type: 'json' };
-import circuit_transfer_to_new from '../circuits/transfer_to_new/target/transfer_to_new.json' assert { type: 'json' };
-
-import { Crs, newBarretenbergApiAsync, RawBuffer } from '@aztec/bb.js/dest/node/index.js';
-
+import circuit_mint from '../../circuits/mint/target/mint.json' assert { type: 'json' };
+import circuit_transfer from '../../circuits/transfer/target/transfer.json' assert { type: 'json' };
+import circuit_transfer_to_new from '../../circuits/transfer_to_new/target/transfer_to_new.json' assert { type: 'json' };
 import { ethers } from 'ethers';
-import { executeCircuit, compressWitness } from '@noir-lang/acvm_js';
+import initACVM, { executeCircuit, compressWitness } from '@noir-lang/acvm_js';
 import { decompressSync } from 'fflate';
 
 
+import {
+    Crs,
+    newBarretenbergApiAsync,
+    RawBuffer,
+  } from '@aztec/bb.js/dest/browser/index.js';
+
 export async function genProof(circuit_name,inputs){
+  await initACVM();
+
   if (typeof inputs === "string"){
     inputs = JSON.parse(inputs); // this is to be able to use the cli_utils.js to generate proofs, otherwise, if genProof is called in the front-end, inputs should be an object with BigInt values : see examples in the commented tests at the bottom of this file
   }
@@ -30,10 +35,13 @@ export async function genProof(circuit_name,inputs){
   }
 
   const acirBufferUncompressed = decompressSync(acirBuffer);
-  const api = await newBarretenbergApiAsync(4);
+  const numberOfWorkers = Math.max(1,window.navigator.hardwareConcurrency-2) || 8; // Default to 8 if the property isn't supported
+  const api = await newBarretenbergApiAsync(numberOfWorkers);
   const [exact, circuitSize, subgroup] = await api.acirGetCircuitSizes(acirBufferUncompressed);
+
   const subgroupSize = Math.pow(2, Math.ceil(Math.log2(circuitSize)));
   const crs = await Crs.new(subgroupSize + 1);
+  
   await api.commonInitSlabAllocator(subgroupSize);
   await api.srsInitSrs(new RawBuffer(crs.getG1Data()), crs.numPoints, new RawBuffer(crs.getG2Data()));
   const acirComposer = await api.acirNewAcirComposer(subgroupSize);

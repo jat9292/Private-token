@@ -10,11 +10,48 @@ async function getBabyJub() {
   return babyJub;
 }
 
+function _uint8ArrayToBigInt(bytes) {
+  let hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+  return BigInt("0x" + hex);
+}
+
+function _bigIntToUint8Array(bigInt) {
+  let hex = bigInt.toString(16);
+
+  // Ensure even number of characters
+  if (hex.length % 2 !== 0) {
+      hex = '0' + hex;
+  }
+
+  const bytes = new Uint8Array(32);
+  const hexLength = hex.length;
+
+  // Start from the end of the hex string and assign byte values to the end of the Uint8Array
+  for (let i = hexLength, byteIndex = 31; i > 0; i -= 2, byteIndex--) {
+      const byteStr = i >= 2 ? hex.slice(i - 2, i) : hex.slice(0, 1); // Handle the scenario where hex has an odd length
+      bytes[byteIndex] = parseInt(byteStr, 16);
+  }
+  return bytes;
+}
+
+export async function getRandomBigInt(maxBigInt) {
+  // Calculate the byte length
+  const byteLength = (maxBigInt.toString(16).length + 1) >> 1;
+  while (true) {
+    const buf = crypto.randomBytes(byteLength);
+    let num = BigInt("0x" + buf.toString("hex"));
+
+    if (num <= maxBigInt) {
+      return num;
+    }
+  }
+}
+
 export async function generatePrivateAndPublicKey() {
   const max_value = BigInt(
     "2736030358979909402780800718157159386076813972158567259200215660948447373041"
   ); // max value should be l (https://eips.ethereum.org/EIPS/eip-2494), the order of the big subgroup to avoid modulo bias
-  const privateKey = _getRandomBigInt(max_value);
+  const privateKey = await getRandomBigInt(max_value);
   const publicKey = await privateToPublicKey(privateKey);
   return { privateKey: privateKey, publicKey: publicKey };
 }
@@ -40,20 +77,23 @@ export async function privateToPublicKey(privateKey) {
   };
 }
 
-function _uint8ArrayToBigInt(bytes) {
-  let hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
-  return BigInt("0x" + hex);
-}
-
-function _getRandomBigInt(maxBigInt) {
-  // Calculate the byte length
-  const byteLength = (maxBigInt.toString(16).length + 1) >> 1;
-  while (true) {
-    const buf = crypto.randomBytes(byteLength);
-    let num = BigInt("0x" + buf.toString("hex"));
-
-    if (num <= maxBigInt) {
-      return num;
+export async function exp_elgamal_encrypt(public_key, plaintext) {  // same notations as in https://en.wikipedia.org/wiki/ElGamal_encryption 
+    const babyJub = await getBabyJub();
+    // Check if it's a number and an integer in uint40 range
+    if (typeof plaintext === 'number' && Number.isInteger(plaintext) && plaintext >= 0 && plaintext <= 1099511627775) {
+        const max_value = BigInt('2736030358979909402780800718157159386076813972158567259200215660948447373041'); // max value should be l (https://eips.ethereum.org/EIPS/eip-2494), the order of the big subgroup to avoid modulo bias
+        const randomness = await getRandomBigInt(max_value);
+        const C1P = babyJub.mulPointEscalar(babyJub.Base8,randomness);
+        const plain_embedded = babyJub.mulPointEscalar(babyJub.Base8,plaintext);
+        const shared_secret = babyJub.mulPointEscalar([babyJub.F.toMontgomery(_bigIntToUint8Array(public_key.x).reverse()),babyJub.F.toMontgomery(_bigIntToUint8Array(public_key.y).reverse())],randomness);
+        const C2P = babyJub.addPoint(plain_embedded,shared_secret);
+        const C1 = {"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C1P[0])).reverse()),
+                    "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C1P[1])).reverse())};
+        const C2 = {"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C2P[0])).reverse()),
+                    "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(C2P[1])).reverse())};
+        return {"C1":C1, "C2": C2, "randomness": randomness}; // randomness should stay private, but we need it as private inputs in the circuit
     }
-  }
+        else {
+            throw new Error("Plain value most be an integer in uint40 range");
+        }
 }

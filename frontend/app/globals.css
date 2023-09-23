@@ -6,6 +6,12 @@ body > div {
   margin-left: 1rem;
 }
 
+u {
+  text-decoration: underline; 
+  border-bottom: 2px solid black;
+  font-weight: bold;
+}
+
 button {
   margin-left: 0.5rem;
   padding-left: 1rem;
