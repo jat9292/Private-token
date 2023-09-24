@@ -97,3 +97,33 @@ export async function exp_elgamal_encrypt(public_key, plaintext) {  // same nota
             throw new Error("Plain value most be an integer in uint40 range");
         }
 }
+
+export async function exp_elgamal_decrypt_embedded(private_key, C1, C2) {
+  const babyJub = await getBabyJub();
+  const shared_secret = babyJub.mulPointEscalar([babyJub.F.toMontgomery(_bigIntToUint8Array(C1.x).reverse()),babyJub.F.toMontgomery(_bigIntToUint8Array(C1.y).reverse())],private_key);
+  const shared_secret_inverse = babyJub.mulPointEscalar(shared_secret,2736030358979909402780800718157159386076813972158567259200215660948447373040n); // Note : this BigInt is equal to l-1, this equivalent here to -1, to take the inverse of shared_secret, because mulPointEscalar only supports positive values for the second argument
+  const plain_embedded = babyJub.addPoint([babyJub.F.toMontgomery(_bigIntToUint8Array(C2.x).reverse()),babyJub.F.toMontgomery(_bigIntToUint8Array(C2.y).reverse())],shared_secret_inverse);
+  return {"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(plain_embedded[0])).reverse()),
+          "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(plain_embedded[1])).reverse())};
+}
+
+export async function intToLittleEndianHex(n) { // should take a BigInt and returns a string in little endian hexadecimal, of size 64, to give as input as the Rust script computing the Discrete Log with baby-step giant-step algo
+  // Ensure input is a BigInt
+  if (typeof n !== 'bigint') {
+      throw new Error('Input must be a BigInt.');
+  }
+
+  let hexValue = n.toString(16);
+
+  if (hexValue.length % 2 !== 0) {
+      hexValue = '0' + hexValue;
+  }
+
+  const pairs = [];
+  for (let i = 0; i < hexValue.length; i += 2) {
+      pairs.push(hexValue.substring(i, i + 2));
+  }
+  const littleEndian = pairs.reverse().join('');
+
+  return littleEndian.padEnd(64, '0');
+}
