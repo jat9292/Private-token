@@ -1,12 +1,14 @@
 "use client"
 
 import Image from "next/image";
+import dynamic from 'next/dynamic'
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import KeyGenerator from "../../components/KeyGenerator";
 import DeployPKI from "../../components/DeployPKI";
 import DeployPT from "../../components/DeployPT";
 import RegisterPK from "../../components/RegisterPK";
-import ComputeMintProof from "../../components/ComputeMintProof";
+//import ComputeMintProof from "../../components/ComputeMintProof";
+const ComputeMintProof = dynamic(() => import('../../components/ComputeMintProof'), { ssr: false })
 import {useState, useEffect} from 'react';
 import PKIjson from "../../../hardhat/artifacts/contracts/PublicKeyInfrastructure.sol/PublicKeyInfrastructure.json";
 import PTjson from "../../../hardhat/artifacts/contracts/PrivateToken.sol/PrivateToken.json";
