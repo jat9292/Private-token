@@ -30,3 +30,6 @@ ds:
 
 verify:
     cd hardhat && npx hardhat --network sepolia etherscan-verify
+
+release:
+    cd frontend && npm run build && npm run start

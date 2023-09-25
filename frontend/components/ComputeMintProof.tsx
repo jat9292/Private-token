@@ -24,7 +24,7 @@ export default function ComputeMintProof({PK, onChange, setSupply}:{PK: any, onC
     setIsOpenManual(true);
     setStartProving(true);
   };
-  const [privateKeyValue, setPrivateKeyValue] = useState("0");
+  const [privateKeyValue, setPrivateKeyValue] = useState("");
   const [randomnessValue, setRandomnessValue] = useState("0");
   const [valueValue, setValueValue] = useState("0");
   const [C1xValue, setC1xValue] = useState("0");
