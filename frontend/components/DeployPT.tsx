@@ -12,8 +12,8 @@ import SpinnerComponent from "./SpinnerComponent";
 import useWindowSize from 'react-use/lib/useWindowSize'
 import Confetti from 'react-confetti'
 
-function uint8ArrayToHexString(arr) {
-  return '0x' + Array.from(arr).map(byte => byte.toString(16).padStart(2, '0')).join('');
+function uint8ArrayToHexString(arr: any) {
+  return '0x' + Array.from(arr).map((byte: any) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 export default function DeployPT({proofMint, pkiDeployedAddress, totalSupply} : {proofMint: any, pkiDeployedAddress: any, totalSupply:any}) {

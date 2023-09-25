@@ -24,13 +24,13 @@ export default function ComputeMintProof({PK, onChange, setSupply}:{PK: any, onC
     setIsOpenManual(true);
     setStartProving(true);
   };
-  const [privateKeyValue, setPrivateKeyValue] = useState(BigInt(0));
-  const [randomnessValue, setRandomnessValue] = useState(BigInt(0));
-  const [valueValue, setValueValue] = useState(BigInt(0));
-  const [C1xValue, setC1xValue] = useState(BigInt(0));
-  const [C1yValue, setC1yValue] = useState(BigInt(0));
-  const [C2xValue, setC2xValue] = useState(BigInt(0));
-  const [C2yValue, setC2yValue] = useState(BigInt(0));
+  const [privateKeyValue, setPrivateKeyValue] = useState("0");
+  const [randomnessValue, setRandomnessValue] = useState("0");
+  const [valueValue, setValueValue] = useState("0");
+  const [C1xValue, setC1xValue] = useState("0");
+  const [C1yValue, setC1yValue] = useState("0");
+  const [C2xValue, setC2xValue] = useState("0");
+  const [C2yValue, setC2yValue] = useState("0");
   const [proof, setProof] = useState(new Uint8Array());
 
   useEffect(()=>{startProving && confirmEnterManually()},[randomnessValue]);
@@ -38,11 +38,11 @@ export default function ComputeMintProof({PK, onChange, setSupply}:{PK: any, onC
   const onChangeText = async ()=>{
     const max_value = BigInt("2736030358979909402780800718157159386076813972158567259200215660948447373041");
     const encryptedTotalSupply = await exp_elgamal_encrypt({x:BigInt(PK.x),y:BigInt(PK.y)},Number(valueValue));
-    setRandomnessValue(encryptedTotalSupply.randomness);
-    setC1xValue(encryptedTotalSupply.C1.x);
-    setC1yValue(encryptedTotalSupply.C1.y);
-    setC2xValue(encryptedTotalSupply.C2.x);
-    setC2yValue(encryptedTotalSupply.C2.y);
+    setRandomnessValue(encryptedTotalSupply.randomness.toString());
+    setC1xValue(encryptedTotalSupply.C1.x.toString());
+    setC1yValue(encryptedTotalSupply.C1.y.toString());
+    setC2xValue(encryptedTotalSupply.C2.x.toString());
+    setC2yValue(encryptedTotalSupply.C2.y.toString());
     
   }
   const confirmEnterManually = async () => {
@@ -62,7 +62,7 @@ export default function ComputeMintProof({PK, onChange, setSupply}:{PK: any, onC
       
       try{const proof_mint = await genProof("mint",enteredValues);
           setIsCorrectProof(true);
-          setProof(proof_mint);
+          setProof(proof_mint as Uint8Array);
         }
       catch {
         console.log("Failed proof, ensure keys are correct");
@@ -103,7 +103,7 @@ export default function ComputeMintProof({PK, onChange, setSupply}:{PK: any, onC
           <strong>Private Key:</strong> &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;<input type="number" className="w-8/12" value={privateKeyValue} onChange={(e) => {setPrivateKeyValue(e.target.value)}} style={{ border: '1px solid black' }}/>  &nbsp; &nbsp; <i>(Private Input)</i> 
           </p>
           <p>
-          <strong>Total Supply to mint:</strong>  <input type="number" className="w-2/12" value={BigInt(valueValue)} onChange={(e) => {setValueValue(e.target.value)}} style={{ border: '1px solid black' }}/> <i> &nbsp; &nbsp;Must be less than 1099511627775 (max(uint40))</i>
+          <strong>Total Supply to mint:</strong>  <input type="number" className="w-2/12" value={valueValue} onChange={(e) => {setValueValue(e.target.value)}} style={{ border: '1px solid black' }}/> <i> &nbsp; &nbsp;Must be less than 1099511627775 (max(uint40))</i>
           </p>
         </div>
       }

@@ -15,8 +15,8 @@ import {
 } from "wagmi";
 import { readContract } from '@wagmi/core'
 
-function uint8ArrayToHexString(arr) {
-  return '0x' + Array.from(arr).map(byte => byte.toString(16).padStart(2, '0')).join('');
+function uint8ArrayToHexString(arr: any) {
+  return '0x' + Array.from(arr).map(byte => (byte as any).toString(16).padStart(2, '0')).join('');
 }
 
 const truncateTxHash = (address: string) => {
@@ -26,18 +26,17 @@ const truncateTxHash = (address: string) => {
   return `${match[1]}…${match[2]}`;
 };
 
-function isValidEthereumAddress(address,sender) {
+function isValidEthereumAddress(address: string,sender: string) {
   if (!address) return false;
   if (address.length !== 42) return false;
   if (address===sender) return false; // cannot send to seld (enforced in the smart contract also)
   return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
-function isValidIntegerInRange(str, max_value) {
+function isValidIntegerInRange(str: string, max_value: number) {
   const number = parseInt(str, 10);
   return str === String(number) && number >= 1 && number <= max_value;
 }
-
 
 export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,addressPKI,onChange}:{privateKey: any, PK: any, PTAddress: any, balance: any, encBalance: any, addressPKI: any, onChange: any}) {
   const { address } = useAccount()
@@ -46,16 +45,16 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
   const [isValidAddress,setIsValidAddress] = useState(true);
   const [amountIsInRange,setAmountIsInRange] = useState(true);
   const [recipientIsRegistered,setRecipientIsRegistered] = useState(true);
-  const [recipientPK, setRecipientPK] = useState("");
+  const [recipientPK, setRecipientPK] = useState({x:BigInt(0),y:BigInt(0)});
   const [isProving, setIsProving] = useState(false);
   const [isCorrectProof, setIsCorrectProof] = useState(false);
   const [proof, setProof] = useState(new Uint8Array());
   const [computedAlready, setComputedAlready] = useState(false);
   const [isTransferring, setIsTransferring] = useState(false);
-  const [balancesenderEncNew,setBalanceSenderEncNew] = useState("");
-  const [balanceRecipientEncOld,setBalanceRecipientEncOld] = useState("");
-  const [balanceRecipientEncNew,setBalanceRecipientEncNew] = useState("");
-  const [argumentsTx, setArgumentsTx] = useState("");
+  const [balancesenderEncNew, setBalanceSenderEncNew] = useState({C1:{x:BigInt(0),y:BigInt(0)},C2:{x:BigInt(0),y:BigInt(0)}});
+  const [balanceRecipientEncOld,setBalanceRecipientEncOld] = useState([]);
+  const [balanceRecipientEncNew,setBalanceRecipientEncNew] = useState({C1:{x:BigInt(0),y:BigInt(0)},C2:{x:BigInt(0),y:BigInt(0)}});
+  const [argumentsTx, setArgumentsTx] = useState([]);
   const [proofType, setProofType] = useState("");
   const [toggle, setToggle] = useState(false);
   const [toggle2, setToggle2] = useState(false);
@@ -91,7 +90,7 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
   },[isLoadingPrep])
 
   useEffect(()=> {
-    if (isSuccess){onChange(balance-amount, [balancesenderEncNew.C1.x,balancesenderEncNew.C1.y,balancesenderEncNew.C2.x,balancesenderEncNew.C2.y]);}
+    if (isSuccess){onChange(balance-Number(amount), [balancesenderEncNew.C1.x,balancesenderEncNew.C1.y,balancesenderEncNew.C2.x,balancesenderEncNew.C2.y]);}
   },[isSuccess])
 
   const doTransfer = async ()=>{
@@ -107,7 +106,7 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
         {C1x: balancesenderEncNew.C1.x, C1y: balancesenderEncNew.C1.y, C2x: balancesenderEncNew.C2.x, C2y: balancesenderEncNew.C2.y}, 
         {C1x: balanceRecipientEncNew.C1.x, C1y: balanceRecipientEncNew.C1.y, C2x: balanceRecipientEncNew.C2.x, C2y: balanceRecipientEncNew.C2.y},
         sliced_proof_transfer];
-    setArgumentsTx(argumentsTx_);
+    setArgumentsTx(argumentsTx_ as any);
     
   }
 
@@ -201,7 +200,7 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
 
       try{const proof_transfer = await genProof(proof_type,inputs_transfer);
           setIsCorrectProof(true);
-          setProof(proof_transfer);
+          setProof(proof_transfer as any);
           setBalanceSenderEncNew(balance_sender_enc_new);
           setBalanceRecipientEncNew(balance_recipient_enc_new);
           setToggle3(!toggle3);
@@ -231,17 +230,17 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
         functionName: 'getRegistredKey',
         args: [to]
       });
-      if (PK_.X=== BigInt(0) && PK_.Y=== BigInt(0)){
+      if ((PK_ as any).X=== BigInt(0) && (PK_ as any).Y=== BigInt(0)){
         setRecipientIsRegistered(false);
       } else {
-        setRecipientPK({x:PK_.X,y:PK_.Y});
+        setRecipientPK({x:(PK_ as any).X,y:(PK_ as any).Y});
         const balanceRecipientEncOld_ = await readContract({
           address: PTAddress,
           abi: PTjson.abi,
           functionName: 'balances',
           args: [to]
         });
-        setBalanceRecipientEncOld(balanceRecipientEncOld_);
+        setBalanceRecipientEncOld(balanceRecipientEncOld_ as any);
         setToggle2(!toggle2);
         setRecipientIsRegistered(true);
         setIsProving(true);
@@ -253,9 +252,9 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
     if (to){updateState();} // to avoid during first rendring
   },[toggle])
 
-  const sendFunction = async (to_,amount_) =>{
+  const sendFunction = async (to_: string,amount_: string) =>{
     if (to && amount) {
-      if (!isValidEthereumAddress(to_,address)) {setIsValidAddress(false);setRecipientIsRegistered(true)} else {setIsValidAddress(true)};
+      if (!isValidEthereumAddress(to_,address as `0x${string}`)) {setIsValidAddress(false);setRecipientIsRegistered(true)} else {setIsValidAddress(true)};
       if (!isValidIntegerInRange(amount_,balance)) {setAmountIsInRange(false);setRecipientIsRegistered(true)} else {setAmountIsInRange(true)};
       setToggle(!toggle)
     }
@@ -288,7 +287,7 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
             <div>
               Successfully sent tokens!
               <div>
-                <a href={`https://sepolia.etherscan.io/tx/${data?.hash}`} style={{textDecoration: "underline"}} target="_blank" rel="noopener noreferrer">Check confirmation on Etherscan: Tx hash {truncateTxHash(data?.hash)}</a>
+                <a href={`https://sepolia.etherscan.io/tx/${data?.hash}`} style={{textDecoration: "underline"}} target="_blank" rel="noopener noreferrer">Check confirmation on Etherscan: Tx hash {truncateTxHash(data?.hash as `0x${string}`)}</a>
               </div>
             </div>
           )}

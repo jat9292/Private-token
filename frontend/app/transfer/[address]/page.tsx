@@ -41,51 +41,53 @@ export default function Home() {
     const [decryptedBalance, setDecryptedBalance] = useState("");
     const [PK, setPK] = useState("");
     const [privateKey, setPrivateKey] = useState("");
-    const [isRegistered, setIsRegistered] = useState("");
+    const [isRegistered, setIsRegistered] = useState(false);
 
-    const onChangeDecrypt = async (decryptedBalance_, privateKey_) =>{
+    const onChangeDecrypt = async (decryptedBalance_: any, privateKey_: any) =>{
         setDecryptedBalance(decryptedBalance_);
         setPrivateKey(privateKey_);
     }
 
-    const onChangeSendToken = async (decryptedBalance_, encryptedBalance_) =>{
+    const onChangeSendToken = async (decryptedBalance_: any, encryptedBalance_: any) =>{
         setDecryptedBalance(decryptedBalance_);
         setEncryptedBalance(encryptedBalance_);
     }
 
     useEffect(() => {
         async function fetch() {
+            setPrivateKey("");
             setDecryptedBalance("");
             const addressPKI_ = await readContract({
-                address: addressToken,
+                address: addressToken as `0x${string}`,
                 abi: PTjson.abi,
                 functionName: 'PKI',
             });
-            setAddressPKI(addressPKI_);
+            setAddressPKI(addressPKI_  as string);
             const totalSupply_ = await readContract({
-                address: addressToken,
+                address: addressToken as `0x${string}`,
                 abi: PTjson.abi,
                 functionName: 'totalSupply',
             });
-            setTotalSupply(totalSupply_);
+            setTotalSupply(totalSupply_  as string);
             const encryptedBalance_ = await readContract({
-                address: addressToken,
+                address: addressToken as `0x${string}`,
                 abi: PTjson.abi,
                 functionName: 'balances',
                 args: [address]
             });
-            setEncryptedBalance(encryptedBalance_);
+            setEncryptedBalance(encryptedBalance_ as any);
             const PK_ = await readContract({
-                address: addressPKI_,
+                address: addressPKI_ as `0x${string}`,
                 abi: PKIjson.abi,
                 functionName: 'getRegistredKey',
                 args: [address]
             });
             
-            if (PK_.X!== BigInt(0) || PK_.Y!== BigInt(0)){
-                setPK(PK_);
+            if ((PK_ as any).X!== BigInt(0) || (PK_ as any).Y!== BigInt(0)){
+                setPK(PK_ as any);
                 setIsRegistered(true);
             } else{
+                setPK("");
                 setIsRegistered(false);
             }
         }
@@ -119,7 +121,7 @@ export default function Home() {
             {decryptedBalance && <SendToken privateKey={privateKey} PK={PK} PTAddress={addressToken} balance={decryptedBalance} encBalance={encryptedBalance} addressPKI={addressPKI} onChange={onChangeSendToken}/>}
             </div>)}
 
-            {((isRegistered===false) && isConnected) && (<div>Your account is not registered for this Private Token yet! <br/>Please register your public key if you want to be able to receive and send tokens.<br/>
+            {(!isRegistered && isConnected) && (<div>Your account is not registered for this Private Token yet! <br/>Please register your public key if you want to be able to receive and send tokens.<br/>
             {<>&bull; <u>Step 1</u> : Generate or choose public key on the Baby Jubjub curve : 
             <KeyGenerator onChange={setPK} registered={isRegistered}/></>}
             {PK && <>&bull; <u>Step 3</u> : Register this public key in the PKI contract : 

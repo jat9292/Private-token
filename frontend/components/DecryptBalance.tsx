@@ -21,7 +21,8 @@ export default function DecryptBalance({Cxy, onChange}:{Cxy: any, onChange: any}
   const [isCorrectDecryption, setIsCorrectDecryption] = useState(false);
   const [computedAlready, setComputedAlready] = useState(false);
   const [decryptedBal, setDecryptedBal] = useState("");
-  const [isNull, setIsNull] = useState("");
+  const [isNull, setIsNull] = useState(true);
+  const [privateKeyValue, setPrivateKeyValue] = useState("");
   
   useEffect(()=>{
     if (Cxy[0]===BigInt(0) && Cxy[1]===BigInt(0) && Cxy[2]===BigInt(0) && Cxy[3]===BigInt(0)){
@@ -34,7 +35,6 @@ export default function DecryptBalance({Cxy, onChange}:{Cxy: any, onChange: any}
   const handleEnterManually = async () => {
     setIsOpenManual(true);
   };
-  const [privateKeyValue, setPrivateKeyValue] = useState(BigInt(0));
 
   const modalStyle = {
     overlay: {
@@ -52,8 +52,7 @@ export default function DecryptBalance({Cxy, onChange}:{Cxy: any, onChange: any}
     }
   };
 
-
-  const calculate = async (Embx,Emby) => {
+  const calculate = async (Embx: any,Emby: any) => {
     const numberOfWorkers = Math.max(1,window.navigator.hardwareConcurrency-2) || 8; // Default to 8 if the property isn't supported
     let workersCompleted = 0;
     let found = false;
@@ -82,7 +81,7 @@ export default function DecryptBalance({Cxy, onChange}:{Cxy: any, onChange: any}
 
   };
 
-  const decrypt = async (privateKey_)=>{
+  const decrypt = async (privateKey_: any)=>{
     
     try{
       const decrypted_embedded = await exp_elgamal_decrypt_embedded(BigInt(privateKey_),{x:Cxy[0],y:Cxy[1]},{x:Cxy[2],y:Cxy[3]});
