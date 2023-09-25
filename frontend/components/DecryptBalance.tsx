@@ -75,8 +75,8 @@ export default function DecryptBalance({Cxy, onChange}:{Cxy: any, onChange: any}
       const myWorker = new Worker(new URL('./worker_babygiant.js', import.meta.url));
       myWorker.onmessage = onWorkerMessage;
   
-      let start = i * chunkSize + 1;
-      let end = Math.min(n, start + chunkSize-1);
+      let start = i * chunkSize;
+      let end = Math.min(n, start + chunkSize);
       myWorker.postMessage({ Cx: Embx, Cy: Emby, min_range: start, max_range: end });
     }
 

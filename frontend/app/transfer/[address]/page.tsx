@@ -35,7 +35,6 @@ export default function Home() {
     const pathlist = pathname.split('/');
     const addressToken = pathlist[pathlist.length-1];
     const { address, isConnected } = useAccount();
-
     const [addressPKI, setAddressPKI] = useState("");
     const [totalSupply, setTotalSupply] = useState("");
     const [encryptedBalance, setEncryptedBalance] = useState("");

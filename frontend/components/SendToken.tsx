@@ -1,6 +1,6 @@
 "use client";
 
-import { exp_elgamal_encrypt } from "./bjj_utils.js";
+import { exp_elgamal_encrypt, add_points } from "./bjj_utils.js";
 import { genProof } from './proof_utils_front.js';
 import { useState, useEffect } from "react";
 import { ContractFactory, providers } from 'ethers';
@@ -19,9 +19,17 @@ function uint8ArrayToHexString(arr) {
   return '0x' + Array.from(arr).map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-function isValidEthereumAddress(address) {
+const truncateTxHash = (address: string) => {
+  const truncateRegex = /^(0x[a-zA-Z0-9]{6})[a-zA-Z0-9]+([a-zA-Z0-9]{6})$/;
+  const match = address.match(truncateRegex);
+  if (!match) return address;
+  return `${match[1]}…${match[2]}`;
+};
+
+function isValidEthereumAddress(address,sender) {
   if (!address) return false;
   if (address.length !== 42) return false;
+  if (address===sender) return false; // cannot send to seld (enforced in the smart contract also)
   return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
@@ -35,9 +43,6 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
   const { address } = useAccount()
   const [amount, setAmount] = useState("");
   const [to, setTo] = useState("");
-  const [toggle, setToggle] = useState(false);
-  const [toggle2, setToggle2] = useState(false);
-  const [toggle3, setToggle3] = useState(false);
   const [isValidAddress,setIsValidAddress] = useState(true);
   const [amountIsInRange,setAmountIsInRange] = useState(true);
   const [recipientIsRegistered,setRecipientIsRegistered] = useState(true);
@@ -48,8 +53,13 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
   const [computedAlready, setComputedAlready] = useState(false);
   const [isTransferring, setIsTransferring] = useState(false);
   const [balancesenderEncNew,setBalanceSenderEncNew] = useState("");
+  const [balanceRecipientEncOld,setBalanceRecipientEncOld] = useState("");
   const [balanceRecipientEncNew,setBalanceRecipientEncNew] = useState("");
   const [argumentsTx, setArgumentsTx] = useState("");
+  const [proofType, setProofType] = useState("");
+  const [toggle, setToggle] = useState(false);
+  const [toggle2, setToggle2] = useState(false);
+  const [toggle3, setToggle3] = useState(false);
   const { config, isLoading : isLoadingPrep } = usePrepareContractWrite({
     address: PTAddress,
     abi: PTjson.abi,
@@ -85,54 +95,113 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
   },[isSuccess])
 
   const doTransfer = async ()=>{
-    let sliced_proof_transfer_to_new = uint8ArrayToHexString(proof.slice(16*32)); // there are 16 public inputs (bytes32) for the transfer_to_new circuit
+    let sliced_proof_transfer;
+    if(proofType=="transfer_to_new"){
+      sliced_proof_transfer = uint8ArrayToHexString(proof.slice(16*32)); // there are 16 public inputs (bytes32) for the transfer_to_new circuit
+    } else {
+      sliced_proof_transfer = uint8ArrayToHexString(proof.slice(20*32)); // there are 20 public inputs (bytes32) for the transfer circuit
+    }
     const argumentsTx_ = [to, 
         {C1x: encBalance[0], C1y: encBalance[1], C2x: encBalance[2], C2y: encBalance[3]}, 
-        {C1x: 0, C1y: 0, C2x: 0, C2y: 0}, 
+        {C1x: balanceRecipientEncOld[0], C1y: balanceRecipientEncOld[1], C2x: balanceRecipientEncOld[2], C2y: balanceRecipientEncOld[3]}, 
         {C1x: balancesenderEncNew.C1.x, C1y: balancesenderEncNew.C1.y, C2x: balancesenderEncNew.C2.x, C2y: balancesenderEncNew.C2.y}, 
         {C1x: balanceRecipientEncNew.C1.x, C1y: balanceRecipientEncNew.C1.y, C2x: balanceRecipientEncNew.C2.x, C2y: balanceRecipientEncNew.C2.y},
-        sliced_proof_transfer_to_new];
+        sliced_proof_transfer];
     setArgumentsTx(argumentsTx_);
     
   }
 
   const computeProof = async ()=>{
+    let proof_type;
+    let inputs_transfer;
+    let balance_sender_enc_new;
+    let balance_recipient_enc_new;
+    let delta_balance_recipient_enc_new;
 
-    const balance_sender_enc_new = await exp_elgamal_encrypt({x:BigInt(PK.X),y:BigInt(PK.Y)},Number(balance)-Number(amount));
-    const balance_recipient_enc_new = await exp_elgamal_encrypt({x:BigInt(recipientPK.x),y:BigInt(recipientPK.y)},Number(amount));
-    
-    const inputs_transfer_to_new = {
-      private_key: BigInt(privateKey), 
-      randomness1: balance_sender_enc_new.randomness,
-      randomness2: balance_recipient_enc_new.randomness,
-      value: BigInt(amount.toString()),
-      balance_old_me_clear: BigInt(balance),
+    if (balanceRecipientEncOld[0]===BigInt(0) && balanceRecipientEncOld[1]===BigInt(0) && balanceRecipientEncOld[2]===BigInt(0) && balanceRecipientEncOld[3]===BigInt(0)){
+      proof_type = "transfer_to_new";
+    } else {proof_type = "transfer";}
 
-      public_key_me_x: PK.X,
-      public_key_me_y: PK.Y,
+    setProofType(proof_type);
 
-      public_key_to_x: recipientPK.x,
-      public_key_to_y: recipientPK.y,
+    if(proof_type==="transfer_to_new"){
+      balance_sender_enc_new = await exp_elgamal_encrypt({x:BigInt(PK.X),y:BigInt(PK.Y)},Number(balance)-Number(amount));
+      balance_recipient_enc_new = await exp_elgamal_encrypt({x:BigInt(recipientPK.x),y:BigInt(recipientPK.y)},Number(amount));
+      
+      inputs_transfer = {
+        private_key: BigInt(privateKey), 
+        randomness1: balance_sender_enc_new.randomness,
+        randomness2: balance_recipient_enc_new.randomness,
+        value: BigInt(amount.toString()),
+        balance_old_me_clear: BigInt(balance),
 
-      balance_old_me_encrypted_1_x: encBalance[0],
-      balance_old_me_encrypted_1_y: encBalance[1],
-      balance_old_me_encrypted_2_x: encBalance[2],
-      balance_old_me_encrypted_2_y: encBalance[3],
+        public_key_me_x: PK.X,
+        public_key_me_y: PK.Y,
 
-      balance_new_me_encrypted_1_x: balance_sender_enc_new.C1.x,
-      balance_new_me_encrypted_1_y: balance_sender_enc_new.C1.y,
-      balance_new_me_encrypted_2_x: balance_sender_enc_new.C2.x,
-      balance_new_me_encrypted_2_y: balance_sender_enc_new.C2.y,
+        public_key_to_x: recipientPK.x,
+        public_key_to_y: recipientPK.y,
 
-      balance_new_to_encrypted_1_x: balance_recipient_enc_new.C1.x,
-      balance_new_to_encrypted_1_y: balance_recipient_enc_new.C1.y,
-      balance_new_to_encrypted_2_x: balance_recipient_enc_new.C2.x,
-      balance_new_to_encrypted_2_y: balance_recipient_enc_new.C2.y
-      };
+        balance_old_me_encrypted_1_x: encBalance[0],
+        balance_old_me_encrypted_1_y: encBalance[1],
+        balance_old_me_encrypted_2_x: encBalance[2],
+        balance_old_me_encrypted_2_y: encBalance[3],
 
-      try{const proof_transfer_to_new = await genProof("transfer_to_new",inputs_transfer_to_new);
+        balance_new_me_encrypted_1_x: balance_sender_enc_new.C1.x,
+        balance_new_me_encrypted_1_y: balance_sender_enc_new.C1.y,
+        balance_new_me_encrypted_2_x: balance_sender_enc_new.C2.x,
+        balance_new_me_encrypted_2_y: balance_sender_enc_new.C2.y,
+
+        balance_new_to_encrypted_1_x: balance_recipient_enc_new.C1.x,
+        balance_new_to_encrypted_1_y: balance_recipient_enc_new.C1.y,
+        balance_new_to_encrypted_2_x: balance_recipient_enc_new.C2.x,
+        balance_new_to_encrypted_2_y: balance_recipient_enc_new.C2.y
+        };
+      } else{ // i.e proof_type==="transfer"
+        balance_sender_enc_new = await exp_elgamal_encrypt({x:BigInt(PK.X),y:BigInt(PK.Y)},Number(balance)-Number(amount));
+        delta_balance_recipient_enc_new = await exp_elgamal_encrypt({x:BigInt(recipientPK.x),y:BigInt(recipientPK.y)},Number(amount));
+
+        // Homomorphic addition of encrypted points
+        balance_recipient_enc_new = {C1: await add_points({x:balanceRecipientEncOld[0],y:balanceRecipientEncOld[1]},delta_balance_recipient_enc_new.C1),
+                                C2: await add_points({x:balanceRecipientEncOld[2],y:balanceRecipientEncOld[3]},delta_balance_recipient_enc_new.C2)};
+        
+        inputs_transfer = {
+          private_key: BigInt(privateKey),
+          randomness1: balance_sender_enc_new.randomness,
+          randomness2: delta_balance_recipient_enc_new.randomness,
+          value: BigInt(amount.toString()),
+          balance_old_me_clear: BigInt(balance),
+
+          public_key_me_x: PK.X,
+          public_key_me_y: PK.Y,
+
+          public_key_to_x: recipientPK.x,
+          public_key_to_y: recipientPK.y,
+
+          balance_old_me_encrypted_1_x: encBalance[0],
+          balance_old_me_encrypted_1_y: encBalance[1],
+          balance_old_me_encrypted_2_x: encBalance[2],
+          balance_old_me_encrypted_2_y: encBalance[3],
+
+          balance_old_to_encrypted_1_x: balanceRecipientEncOld[0],
+          balance_old_to_encrypted_1_y: balanceRecipientEncOld[1],
+          balance_old_to_encrypted_2_x: balanceRecipientEncOld[2],
+          balance_old_to_encrypted_2_y: balanceRecipientEncOld[3],
+
+          balance_new_me_encrypted_1_x: balance_sender_enc_new.C1.x,
+          balance_new_me_encrypted_1_y: balance_sender_enc_new.C1.y,
+          balance_new_me_encrypted_2_x: balance_sender_enc_new.C2.x,
+          balance_new_me_encrypted_2_y: balance_sender_enc_new.C2.y,
+
+          balance_new_to_encrypted_1_x: balance_recipient_enc_new.C1.x,
+          balance_new_to_encrypted_1_y: balance_recipient_enc_new.C1.y,
+          balance_new_to_encrypted_2_x: balance_recipient_enc_new.C2.x,
+          balance_new_to_encrypted_2_y: balance_recipient_enc_new.C2.y
+          };
+      }
+
+      try{const proof_transfer = await genProof(proof_type,inputs_transfer);
           setIsCorrectProof(true);
-          setProof(proof_transfer_to_new);
+          setProof(proof_transfer);
           setBalanceSenderEncNew(balance_sender_enc_new);
           setBalanceRecipientEncNew(balance_recipient_enc_new);
           setToggle3(!toggle3);
@@ -166,6 +235,13 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
         setRecipientIsRegistered(false);
       } else {
         setRecipientPK({x:PK_.X,y:PK_.Y});
+        const balanceRecipientEncOld_ = await readContract({
+          address: PTAddress,
+          abi: PTjson.abi,
+          functionName: 'balances',
+          args: [to]
+        });
+        setBalanceRecipientEncOld(balanceRecipientEncOld_);
         setToggle2(!toggle2);
         setRecipientIsRegistered(true);
         setIsProving(true);
@@ -179,7 +255,7 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
 
   const sendFunction = async (to_,amount_) =>{
     if (to && amount) {
-      if (!isValidEthereumAddress(to_)) {setIsValidAddress(false);setRecipientIsRegistered(true)} else {setIsValidAddress(true)};
+      if (!isValidEthereumAddress(to_,address)) {setIsValidAddress(false);setRecipientIsRegistered(true)} else {setIsValidAddress(true)};
       if (!isValidIntegerInRange(amount_,balance)) {setAmountIsInRange(false);setRecipientIsRegistered(true)} else {setAmountIsInRange(true)};
       setToggle(!toggle)
     }
@@ -212,47 +288,10 @@ export default function SendToken({privateKey,PK,PTAddress,balance,encBalance,ad
             <div>
               Successfully sent tokens!
               <div>
-                <a href={`https://sepolia.etherscan.io/tx/${data?.hash}`} style={{textDecoration: "underline"}} target="_blank" rel="noopener noreferrer">Check confirmation on Etherscan {data?.hash}</a>
+                <a href={`https://sepolia.etherscan.io/tx/${data?.hash}`} style={{textDecoration: "underline"}} target="_blank" rel="noopener noreferrer">Check confirmation on Etherscan: Tx hash {truncateTxHash(data?.hash)}</a>
               </div>
             </div>
           )}
         </>
   )
 }
-
-  /*const { config } = usePrepareContractWrite({
-    address: PTAddress,
-    abi: PTjson.abi,
-    functionName: "transfer",
-    args: [PK.x,PK.y],
-    account: address
-  });
-
-  const { data, write } = useContractWrite(config);
-
-  // Use the useWaitForTransaction hook to wait for the transaction to be mined and return loading and success states
-  const { isLoading, isSuccess } = useWaitForTransaction({
-    hash: data?.hash,
-    confirmations: 1
-  });
-
-  useEffect(() => {
-    onChange(isSuccess)
-  }, [isSuccess]);
-
-  return (
-    <div>
-      {(!isLoading && !isSuccess) && <button 
-        onClick={() => write?.()}>Register Public Key</button>}
-      {isLoading && <button ><SpinnerComponent /> Registering Public Key...</button>}
-      {isSuccess && (
-        <div>
-          <button className="bg-gray-300 text-gray-600 cursor-not-allowed" disabled >Register Public Key</button> <br/>
-          Successfully registered your Public Key!
-          <div>
-            <a href={`https://sepolia.etherscan.io/tx/${data?.hash}`} style={{textDecoration: "underline"}} target="_blank" rel="noopener noreferrer">Check confirmation on Etherscan</a>
-          </div>
-        </div>
-      )}
-    </div>
-  );*/

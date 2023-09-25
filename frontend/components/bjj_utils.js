@@ -127,3 +127,11 @@ export async function intToLittleEndianHex(n) { // should take a BigInt and retu
 
   return littleEndian.padEnd(64, '0');
 }
+
+export async function add_points(P1, P2) { // Used for (homomorphic) addition of baby jubjub (encrypted) points
+  const babyJub = await getBabyJub();
+  const Psum = babyJub.addPoint([babyJub.F.toMontgomery(_bigIntToUint8Array(P1.x).reverse()),babyJub.F.toMontgomery(_bigIntToUint8Array(P1.y).reverse())],
+          [babyJub.F.toMontgomery(_bigIntToUint8Array(P2.x).reverse()),babyJub.F.toMontgomery(_bigIntToUint8Array(P2.y).reverse())]);
+  return {"x":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(Psum[0])).reverse()),
+          "y":_uint8ArrayToBigInt(babyJub.F.fromMontgomery(babyJub.F.e(Psum[1])).reverse())};
+}

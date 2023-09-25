@@ -317,7 +317,7 @@ describe("Private Token integration testing", function () {
     console.log(" 🆗 \x1b[1m\x1b[38;5;213mUserA\x1b[0m 👩 successfully computed a transfer proof and checked it offchain 🆗 ");
 
     console.log(" ");
-    const sliced_proof_transfer = uint8ArrayToHexString(proof_transfer.slice(20*32)); // there are 16 public inputs (bytes32) for the transfer_to_new circuit
+    const sliced_proof_transfer = uint8ArrayToHexString(proof_transfer.slice(20*32)); // there are 20 public inputs (bytes32) for the transfer circuit
     tx = await privateToken.connect(userA).transfer(await userB.getAddress(), 
         {C1x: balance_userA_enc_old[0], C1y: balance_userA_enc_old[1], C2x: balance_userA_enc_old[2], C2y: balance_userA_enc_old[3]}, 
         {C1x: balance_userB_enc_old[0], C1y: balance_userB_enc_old[1], C2x: balance_userB_enc_old[2], C2y: balance_userB_enc_old[3]}, 
