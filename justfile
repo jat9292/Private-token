@@ -26,10 +26,10 @@ gen: ## Wagmi generate
     cd frontend && npx wagmi generate
 
 ds:
-    cd hardhat && npx hardhat deploy --network sepolia
+    cd utils && npm i && cd ../hardhat && npx hardhat deploy --network sepolia
 
 verify:
     cd hardhat && npx hardhat --network sepolia etherscan-verify
 
 release:
-    cd frontend && npm run build && npm run start
+    cd frontend && npm i && npm run build && npm run start
