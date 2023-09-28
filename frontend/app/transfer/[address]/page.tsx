@@ -8,7 +8,7 @@ import DeployPT from "../../../components/DeployPT";
 import RegisterPK from "../../../components/RegisterPK";
 import DecryptBalance from "../../../components/DecryptBalance";
 import SendToken from "../../../components/SendToken";
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import PKIjson from "../../../../hardhat/artifacts/contracts/PublicKeyInfrastructure.sol/PublicKeyInfrastructure.json";
 import PTjson from "../../../../hardhat/artifacts/contracts/PrivateToken.sol/PrivateToken.json";
 import { usePathname } from 'next/navigation'
@@ -42,6 +42,9 @@ export default function Home() {
     const [PK, setPK] = useState("");
     const [privateKey, setPrivateKey] = useState("");
     const [isRegistered, setIsRegistered] = useState(false);
+    const [pkloaded, setPKloaded] = useState(false);
+    const [loading, setLoading] = useState(true);
+
 
     const onChangeDecrypt = async (decryptedBalance_: any, privateKey_: any) =>{
         setDecryptedBalance(decryptedBalance_);
@@ -54,9 +57,17 @@ export default function Home() {
     }
 
     useEffect(() => {
+        setLoading(true)
+        if (addressPKI && totalSupply && encryptedBalance && pkloaded){
+            setLoading(false)
+        }
+    },[privateKey,decryptedBalance,addressPKI,totalSupply,encryptedBalance, pkloaded,address]);
+
+    useEffect(() => {
         async function fetch() {
             setPrivateKey("");
             setDecryptedBalance("");
+            setPKloaded(false);
             const addressPKI_ = await readContract({
                 address: addressToken as `0x${string}`,
                 abi: PTjson.abi,
@@ -68,7 +79,8 @@ export default function Home() {
                 abi: PTjson.abi,
                 functionName: 'totalSupply',
             });
-            setTotalSupply(totalSupply_  as string);
+            
+            setTotalSupply(totalSupply_  as unknown as string);
             const encryptedBalance_ = await readContract({
                 address: addressToken as `0x${string}`,
                 abi: PTjson.abi,
@@ -84,9 +96,11 @@ export default function Home() {
             });
             
             if ((PK_ as any).X!== BigInt(0) || (PK_ as any).Y!== BigInt(0)){
+                setPKloaded(true);
                 setPK(PK_ as any);
                 setIsRegistered(true);
             } else{
+                setPKloaded(true);
                 setPK("");
                 setIsRegistered(false);
             }
@@ -111,7 +125,7 @@ export default function Home() {
                 style={{textDecoration: "underline"}} target="_blank" rel="noopener noreferrer">{truncateEthAddress(addressToken)}</a> | 
                 Total Supply : <strong>{totalSupply}</strong></div>
 
-            {(isRegistered && isConnected) && (<div><div>Encrypted Balance:</div>
+            {(isRegistered && isConnected && !loading) && (<div><div>Encrypted Balance:</div>
             <div className="text-xs">C1x: {encryptedBalance[0].toString()}</div>
             <div className="text-xs">C1y: {encryptedBalance[1].toString()}</div>
             <div className="text-xs">C2x: {encryptedBalance[2].toString()}</div>
@@ -120,8 +134,8 @@ export default function Home() {
             {decryptedBalance && <strong>Your Decrypted Balance is currently : {decryptedBalance}</strong>}
             {decryptedBalance && <SendToken privateKey={privateKey} PK={PK} PTAddress={addressToken} balance={decryptedBalance} encBalance={encryptedBalance} addressPKI={addressPKI} onChange={onChangeSendToken}/>}
             </div>)}
-
-            {(!isRegistered && isConnected) && (<div>Your account is not registered for this Private Token yet! <br/>Please register your public key if you want to be able to receive and send tokens.<br/>
+            {loading && <p>LOADING...</p>}
+            {(!isRegistered && isConnected && !loading) && (<div>Your account is not registered for this Private Token yet! <br/>Please register your public key if you want to be able to receive and send tokens.<br/>
             {<>&bull; <u>Step 1</u> : Generate or choose public key on the Baby Jubjub curve : 
             <KeyGenerator onChange={setPK} registered={isRegistered}/></>}
             {PK && <>&bull; <u>Step 3</u> : Register this public key in the PKI contract : 
