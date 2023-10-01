@@ -15,7 +15,7 @@ First, a deployer, also called *Central Banker*, should deploy a new Private Tok
 
 1/ First a Public Key Infrastructure (PKI) contract is deployed, this contract will contain the mapping between Ethereum addresses and Public Keys (points on the Baby Jubjub curve).
 
-2/ Then, after registering his public key in the PKI, the Central banker will compute a "mint proof" locally and deploy the Private Token contract by giving to its contructor the total minted supply, the PKI address and the "mint proof".
+2/ Then, after registering his public key in the PKI, the Central banker will compute a "mint proof" locally and deploy the Private Token contract by giving to its constructor the total minted supply, the PKI address and the "mint proof".
 
 3/ More precisely, there are also 3 other contracts which correspond to the 3 zkSNARKs verifier contracts needed for the mint and transfer transactions (see details of architecture in the slides). But those are reused for any instance of a newly deployed Private Token contract.
 
