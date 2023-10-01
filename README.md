@@ -27,7 +27,6 @@ The Baby Jubjub private key, which corresponds to the public key, should be safe
 * `nargo` version 0.10.5 **Important**
 * `node` version 18 or later
 * `cargo` v1.73.0-nightly
-* `hardhat` v2.17.2
 * `just 1.14.0` (install it via `cargo install just`)
 
 # To run the tests : 
