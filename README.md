@@ -1,6 +1,8 @@
 # Private-token
 Token with private balances using zkSNARKs and Homomorphic Encryption, inspired by [Zeestar](https://files.sri.inf.ethz.ch/website/papers/sp22-zeestar.pdf) and [Zether](https://crypto.stanford.edu/~buenz/papers/zether.pdf), implemented in [Noir](https://noir-lang.org/) (and Rust).
 
+Read the **[blog post](https://medium.com/@jat9292/zksnarks-homomorphic-encryption-ethereums-privacy-new-frontier-b30357236a7a)** presenting in details how the dApp works and has been implemented!
+
 The dApp is currently deployed here, try it now --> **https://privatetoken.xyz/** <-- you should connect your Web3 wallet to the Sepolia test network and own some testnet ETH. (If needed, you could mine some Sepolia ETH here :  https://sepolia-faucet.pk910.de/  : 0.1 ETH should be enough to send Private Token transactions).
 
 You can read the slides presenting the final project [here](https://docs.google.com/presentation/d/1SDTOthvK1xCXcoKlILIKCobktrDf_ibPUbHtykAQfpc/edit?usp=sharing).
